@@ -28,6 +28,7 @@ int main(int argc, char *argv[]) {
             printf("File %s.as not found.\n", argv[i]);
         }
         free_macros();
+        //hi
         
     }
 
