@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "../headers/utils.h"
+#include "../headers/error.h"
 
 Macro *head = NULL;  // מצביע לראש הרשימה
 
@@ -132,9 +133,11 @@ void pre_assembler(const char *filename)
     char **macro_content = NULL;
     int inside_macro = 0;
     int line_count = 0;
+    int new_line_count = 0;
 
     while (fgets(line, sizeof(line), input_file))
     {
+        line_count++;
         remove_extra_spaces(line);
         line[strcspn(line, "\n")] = '\0'; // הסרת תו סוף שורה
 
@@ -150,28 +153,32 @@ void pre_assembler(const char *filename)
 
         if (strncmp(line, "mcro ", 5) == 0) { 
             inside_macro = 1;
-            line_count = 0;
-            sscanf(line + 5, "%s", macro_name);
+            new_line_count = 0;
+            sscanf(line + 5, "%[^\n]", macro_name);
+
+            if(validate_macro_name(macro_name ,filename, line_count)!= 0){
+                continue;
+            }
             macro_content = NULL;
         } 
         else if (inside_macro && strncmp(line, "mcroend", 7) == 0) { 
-            add_macro(macro_name, macro_content, line_count);
+            add_macro(macro_name, macro_content, new_line_count);
             inside_macro = 0;
 
             // שחרור הזיכרון הזמני ששימש לאחסון השורות
-            for (int i = 0; i < line_count; i++) {
+            for (int i = 0; i < new_line_count; i++) {
                 free(macro_content[i]);
             }
             free(macro_content);
         } 
         else if (inside_macro) { 
-            macro_content = (char **)realloc(macro_content, (line_count + 1) * sizeof(char *));
+            macro_content = (char **)realloc(macro_content, (new_line_count + 1) * sizeof(char *));
             if (!macro_content) {
                 printf("Memory allocation failed while storing macro content.\n");
                 exit(1);
             }
-            macro_content[line_count] = strdup(line);
-            line_count++;
+            macro_content[new_line_count] = strdup(line);
+            new_line_count++;
         } 
         else { 
             Macro *macro = find_macro(line);
@@ -270,4 +277,23 @@ void free_macros() {
         current = next;
     }
     head = NULL;
+}
+
+int validate_macro_name(char *macro_name ,const char *filename , int line) {
+    int valid = 0;
+    //The line contains unnecessary characters.
+    if (strchr(macro_name, ' ') != NULL) {
+        print_syntax_error(ERROR_CODE_10, filename ,line);
+        valid = 1;
+    }
+
+    //The macro name cannot be an instruction
+    for (int i = 0; i < reserved_count; i++) {
+        if (strcmp(macro_name, reserved_words[i]) == 0) {
+            print_syntax_error(ERROR_CODE_9, filename , line);
+            valid = 1;
+        }
+    }
+    
+    return valid; 
 }

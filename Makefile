@@ -10,7 +10,7 @@ CC = gcc
 CFLAGS = -Wall -ansi -pedantic -std=c11 -g -Iinclude 
 
 # כל קבצי המקור (source files)
-SRC = source/main.c source/utils.c
+SRC = source/main.c source/utils.c source/error.c source/first_pass.c
 
 # כל קבצי האובייקט (object files) שנוצרים מקבצי המקור
 OBJ = $(SRC:.c=.o)

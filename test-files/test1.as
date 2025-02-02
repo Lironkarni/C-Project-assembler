@@ -1,10 +1,10 @@
 ; this is commant
 MAIN:            add      r3, LIST 
 LOOP: prn #48 
-mcro  a_mc  
+mcro  add as
 cmp     K, #-6222 
    bne &END 
-mcroend  
+mcroend  1
  lea STR, r6 
  inc r6 
 

@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[]) {
     int i;
-    const char *as_file;
+    char *as_file;
     if (argc < MIN_PARAM) {
         // printf("Usage: %s <filename (without extension)>\n", argv[0]);
         print_system_error(ERROR_CODE_1);

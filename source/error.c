@@ -10,7 +10,9 @@ error errors[]={
     {ERROR_CODE_5, ""},
     {ERROR_CODE_6, ""},
     {ERROR_CODE_7, ""},
-    {ERROR_CODE_8, "the line is too long, more than characters"}
+    {ERROR_CODE_8, "the line is too long, more than characters"},
+    {ERROR_CODE_9,"Macro name is invalid (cannot be an instruction name)."},
+    {ERROR_CODE_10,"Extra characters found in macro open line."}
 
 };
 
@@ -19,7 +21,7 @@ void print_system_error(int error_code){
 }
 
 
-void print_syntax_error(int error_code, char* file_name, int line_number)
+void print_syntax_error(int error_code, const char* file_name, int line_number)
 {
     printf("Error: code: %d | file: %s | at line: %d | %s", error_code, file_name, line_number, errors[error_code].err_message);
 }
