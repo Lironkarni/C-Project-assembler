@@ -54,12 +54,14 @@ Macro *find_macro(const char *name) {
 }
 
 // הסרת רווחים מיותרים משורה
-void remove_extra_spaces(char *line) {
+void remove_extra_spaces(char *line)
+{
     int j = 0;
     int in_space = 0;
     int i = 0;
 
-    while (line[i] == ' ') {
+    while (line[i] == ' ')
+    {
         i++;
     }
 
@@ -67,7 +69,9 @@ void remove_extra_spaces(char *line) {
         if (line[i] != ' ') {
             line[j++] = line[i];
             in_space = 0;
-        } else if (!in_space) {
+        }
+        else if (!in_space)
+        {
             line[j++] = ' ';
             in_space = 1;
         }
@@ -80,9 +84,12 @@ void remove_extra_spaces(char *line) {
     
 }
 
-int is_empty_line(const char *line) {
-    while (*line) {
-        if (!isspace((unsigned char)*line)) {
+int is_empty_line(const char *line)
+{
+    while (*line)
+    {
+        if (!isspace((unsigned char)*line))
+        {
             return 0; // השורה אינה ריקה
         }
         line++;
@@ -91,10 +98,12 @@ int is_empty_line(const char *line) {
 }
 
 // פונקציה לעיבוד קובץ עם מקרואים
-void pre_assembler(const char *filename) {
+void pre_assembler(const char *filename)
+{
     const char *extension = ".as";
     size_t len = strlen(filename);
-    if (len < 3 || strcmp(filename + len - 3, extension) != 0) {
+    if (len < 3 || strcmp(filename + len - 3, extension) != 0)
+    {
         printf("File %s does not have a .as extension. Skipping.\n", filename);
         return;
     }
@@ -110,7 +119,8 @@ void pre_assembler(const char *filename) {
 
     FILE *input_file = fopen(filename, "r");
     FILE *output_file = fopen(new_filename, "w");
-    if (!input_file || !output_file) {
+    if (!input_file || !output_file)
+    {
         perror("Failed to open files");
         if (input_file) fclose(input_file);
         free(new_filename);
@@ -123,9 +133,10 @@ void pre_assembler(const char *filename) {
     int inside_macro = 0;
     int line_count = 0;
 
-    while (fgets(line, sizeof(line), input_file)) {
+    while (fgets(line, sizeof(line), input_file))
+    {
         remove_extra_spaces(line);
-        line[strcspn(line, "\n")] = '\0';  // הסרת תו סוף שורה
+        line[strcspn(line, "\n")] = '\0'; // הסרת תו סוף שורה
 
          // 🔹 בדיקת הערות – אם השורה מתחילה ב-";" דלג עליה
         if (line[0] == ';') {
@@ -194,26 +205,30 @@ char *load_file(char *filename) {
         sprintf(filename_with_extension, "test-files/%s.as", filename);
 
     FILE *file = fopen(filename_with_extension, "r");
-    if (!file) {
+    if (!file)
+    {
         printf("Error: File %s does not exist. Skipping.\n", filename_with_extension);
         free(filename_with_extension);
         return NULL;
     }
     fclose(file);
     return filename_with_extension;
-}
+    }
 
 // פונקציה שבודקת את מספר השורות בקובץ .am ויוצרת קובץ .temp עם מספר השורות
-void check_the_file(const char *filename_ad) {
+void check_the_file(const char *filename_ad)
+{
     FILE *file = fopen(filename_ad, "r");
-    if (!file) {
+    if (!file)
+    {
         printf("Error: Unable to open %s for reading.\n", filename_ad);
         return;
     }
 
     int line_count = 0;
     char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file)) {
+    while (fgets(line, sizeof(line), file))
+    {
         line_count++;
     }
     fclose(file);
@@ -227,7 +242,8 @@ void check_the_file(const char *filename_ad) {
     sprintf(filename_ah, "%s.ah", filename_ad);
     
     FILE *file_ah = fopen(filename_ah, "w");
-    if (!file_ah) {
+    if (!file_ah)
+    {
         printf("Error: Unable to open %s for writing.\n", filename_ah);
         free(filename_ah);
         return;
