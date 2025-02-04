@@ -14,14 +14,17 @@ int main(int argc, char *argv[]) {
     
     //work on the files one by one
     for (i = 1; i < argc; i++) {
-
-
         as_file = load_file(argv[i]);
         if (as_file != NULL) {
             // יוצרים את הקובץ .am
             pre_assembler(as_file);
             free(as_file);
 
+            //if found error in pre-assembler - continue to the next as file (without first\seccond pass)
+            if (FOUND_ERROR_IN_PRE_ASSEMBLER){
+                FOUND_ERROR_IN_PRE_ASSEMBLER = 0;
+                continue;;
+            }
             // בודקים את הקובץ .am ומייצרים קובץ .temp
             char filename_ad[256];
             snprintf(filename_ad, sizeof(filename_ad), "test-files/%s.am", argv[i]);

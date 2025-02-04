@@ -27,5 +27,6 @@ void check_the_file(const char *filename_ad);
 int is_empty_line(const char *line);
 void free_macros(); // פונקציה לשחרור זיכרון של הרשימה המקושרת
 int validate_macro_name(char *macro_name , const char *filename , int line);
+int validate_macro_end(char *line, const char *filename, int line_count);
 
 #endif // FILE_COPY_H
