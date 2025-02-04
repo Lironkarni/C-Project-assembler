@@ -313,3 +313,24 @@ int validate_macro_end(char *line, const char *filename, int line_count) {
     return 0; // אין שגיאה
 
 }
+
+void delete_am_file(const char *filename) {
+
+    size_t len = strlen(filename) + strlen("test-files/") + strlen(".am") + 1;
+
+    char *am_filename = (char *)malloc(len);
+    if (am_filename == NULL) {
+        perror("Memory allocation failed");
+        return;
+    }
+
+    snprintf(am_filename, len, "test-files/%s.am", filename);
+
+    if (remove(am_filename) == 0) {
+        printf("File %s deleted successfully.\n", am_filename);
+    } else {
+        perror("Error deleting file");
+    }
+
+    free(am_filename);
+}

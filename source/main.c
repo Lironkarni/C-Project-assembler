@@ -22,9 +22,11 @@ int main(int argc, char *argv[]) {
 
             //if found error in pre-assembler - continue to the next as file (without first\seccond pass)
             if (FOUND_ERROR_IN_PRE_ASSEMBLER){
+                delete_am_file(argv[i]);
                 FOUND_ERROR_IN_PRE_ASSEMBLER = 0;
-                continue;;
+                continue;
             }
+
             // בודקים את הקובץ .am ומייצרים קובץ .temp
             char filename_ad[256];
             snprintf(filename_ad, sizeof(filename_ad), "test-files/%s.am", argv[i]);
@@ -35,8 +37,6 @@ int main(int argc, char *argv[]) {
             printf("File %s.as not found.\n", argv[i]);
         }
         free_macros();
-        
     }
-
     return 0;
 }
