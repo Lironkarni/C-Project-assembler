@@ -10,7 +10,11 @@ error errors[]={
     {ERROR_CODE_5, ""},
     {ERROR_CODE_6, ""},
     {ERROR_CODE_7, ""},
-    {ERROR_CODE_8, "the line is too long, more than characters"}
+    {ERROR_CODE_8, "the line is too long, more than 80 characters"},
+    {ERROR_CODE_9, "label name is invalid, cannot be assembly instuction name"},
+    {ERROR_CODE_10, "label name is invalid, label name must start with alphabetic char"},
+    {ERROR_CODE_11, "label name is invalid, more than 31 chars"},
+    {ERROR_CODE_12, "label name is invalid, label should contain alphabetic and digits only"}
 
 };
 

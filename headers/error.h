@@ -14,7 +14,13 @@ typedef enum error_codes
     ERROR_CODE_5,
     ERROR_CODE_6,
     ERROR_CODE_7,
-    ERROR_CODE_8
+    ERROR_CODE_8,
+    ERROR_CODE_9,
+    ERROR_CODE_10,
+    ERROR_CODE_11,
+    ERROR_CODE_12
+
+    
 
 }error_codes;
 

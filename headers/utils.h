@@ -8,12 +8,23 @@
 
 #define MAX_LINE_LENGTH 1024
 
+
 typedef struct Macro {
     char *name;             // שם המקרו בזיכרון דינאמי
     char **content;         // מערך דינאמי של שורות המקרו
     int line_count;
     struct Macro *next;     // מצביע למקרו הבא ברשימה המקושרת
 } Macro;
+
+typedef struct Line
+{
+    // FILE *file;
+    char *file_name;
+    char *data;
+    int line_number;
+}Line;
+
+
 
 void add_macro(const char *name, char **content, int line_count);
 Macro *find_macro(const char *name);
@@ -23,5 +34,7 @@ char *load_file(char *filename);
 void check_the_file(const char *filename_ad);
 int is_empty_line(const char *line);
 void free_macros(); // פונקציה לשחרור זיכרון של הרשימה המקושרת
+
+Line *create_line(char* temp_line,char* file,FILE *input_file,int line_number); //create new line
 
 #endif // FILE_COPY_H

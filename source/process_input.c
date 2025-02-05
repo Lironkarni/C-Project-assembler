@@ -1,5 +1,7 @@
-#include "process_input.h"
+#include "../headers/process_input.h"
 #include "../headers/error.h"
+#include "../headers/globals.h"
+#include "../headers/utils.h"
 
 op_code operation_list[] =
 {
@@ -34,6 +36,7 @@ op_code operation_list[] =
 
 void get_word(char* line, char* word)
 {
+	printf("got to get word");
 	int i = 0;
 	while (line[i] != '\0' && line[i] != ' ')
 	{
@@ -55,16 +58,6 @@ op_code check_if_instruction(char* word)
 	return not_found;
 }
 
-int is_empty_line(char* line)
-{
-	int i = 0;
-	while (line[i] != '\0')
-		if (isspace(line[i]))
-			i++;
-		else
-			return 1;
-	return 0;
-}
 
 /*this function gets the command and removes all spaces from the beginning of the command*/
 void remove_spaces(char* line)
@@ -78,119 +71,39 @@ void remove_spaces(char* line)
 }
 
 
-int is_valid_label(char* label)
+int is_valid_label(char* label, Line *line)
 {
-	/*V-check if fininsh with :*/
-	/*check if this is not a name of a macro*/
+	
 	/*V-check its starts with alphbetic char*/
 	/*V-check all chars are alphabetic or digits*/
 	/*V-check if length is lower than 32 (MAX_LABEL_LENGTH)
 	check if label name is saved assembly name
 	check if label as been defind yet
+	/*check if this is not a name of a macro*/
 
 	
-	*/
 	int i = 0, len;
+	op_code op;
 	len = strlen(label);
-	if (label[len - 1] != ':')
+	if (!isalpha(label[0])){
+		print_syntax_error(ERROR_CODE_10, line->file_name,line->line_number);
 		return 1;
-	if (!isalpha(label[0]))
+	}
+	if (len > MAX_LABEL_LENGTH){
+		print_syntax_error(ERROR_CODE_11, line->file_name,line->line_number);
 		return 1;
-	if (len > MAX_LABEL_LENGTH)
-		return 1;
+	}
 	while (label[i] != '\0')
-		if(!isalpha(label[i]) && !isdigit(label[i]))
+		if(!isalpha(label[i]) && !isdigit(label[i])){
+			print_syntax_error(ERROR_CODE_12,line->file_name,line->line_number);
 			return 1;
+		}
 
-}
-
-int main(int argc, char* argv[])
-{
-	FILE* input_file;
-	int line_number = 0, num_args;
-	int len, c;
-	char first_word[MAX_LINE_LENGTH], line[MAX_LINE_LENGTH + 2]; /*for \0 and one more char for overflow check*/
-	char* line_ptr;
-	op_code curr_op;
-
-	/*open the file*/
-	input_file = fopen(argv[1], "r");
-	if (!input_file)
-	{
-		print_system_error(ERROR_CODE_2);
+	//see if its saved assembly name
+	op=check_if_instruction(label);
+	if(strcmp(op.operation_name,"0")==0){
+		print_syntax_error(ERROR_CODE_9,line->file_name,line->line_number);
 		return 1;
 	}
-
-	while (fgets(line, sizeof(line), input_file))
-	{
-		line_number++;
-
-		len = strlen(line); /*ge line length*/
-		if (line[len - 1] == '\n')	/*put '\0' at the end of each line*/
-			line[len - 1] = '\0';
-
-		if (len > MAX_LINE_LENGTH)
-			if (line[MAX_LINE_LENGTH] != '\0' && line[MAX_LINE_LENGTH] != '\n') {
-				printf("Error, line %d is longer than %d\n", line_number, MAX_LINE_LENGTH); /*errr longer than 80*/
-				while ((c = fgetc(input_file)) != '\n' && c != EOF); /*clear the rest of the line*/
-				continue; /*don't check this row, move to the next one*/
-			}
-
-		if (line[0] == ';') /*if line starts with ";" this is comment and ignore it*/
-			continue;
-		if (is_empty_line(line) == 0)
-			continue;
-
-		/*get the fisrt word and check if this is guiding or instructive sentence*/
-		get_word(line, first_word);
-		/*check if its instructive sentence*/
-		curr_op=check_if_instruction(first_word);
-		if (strcmp(curr_op.operation_name, "0") == 0)
-		{
-			printf("not instruction");
-			/*need to check if guiding command*/
-			/*TODO*/
-			/*if its label, need to check if its valid label's name*/
-			is_valid_label(first_word);
-		}
-			
-
-		else /*its instruction*/
-		{
-			/*need to check how many arguments*/
-			line_ptr = line; // Create a pointer to the start of the line
-			memcpy(line_ptr, line+ strlen(curr_op.operation_name),strlen(line));
-			remove_spaces(line_ptr);
-			/*TODO*/
-			/*need to check for comma- if there is- error*/
-			
-			/*fond which case is this by number of arguments*/
-			num_args = curr_op.address_method.num_args;
-			switch (num_args)
-			{
-			case 0:
-				printf("%s\n", curr_op.operation_name);
-				printf("0 args\n");
-				break;
-
-			case 1:
-				printf("%s\n", curr_op.operation_name);
-				printf("1 args\n");
-				break;
-			
-			case 2:
-				printf("%s\n", curr_op.operation_name);
-				printf("2 args\n");
-				break;
-			
-			default:
-				printf("%s\n", curr_op.operation_name);
-				printf("some error\n");
-				break;
-			}			
-		}
-	}
-
-	fclose(input_file);
 	return 0;
 }
