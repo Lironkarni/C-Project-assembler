@@ -24,7 +24,9 @@ typedef enum error_codes
 
 }error_codes;
 
+extern int FOUND_ERROR_IN_PRE_ASSEMBLER;
+
 
 void print_system_error(int error_code);
 
-void print_syntax_error(int error_code, char* file_name, int line_number);
+void print_syntax_error(int error_code, const char* file_name, int line_number);

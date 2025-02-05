@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "../headers/utils.h"
+#include "../headers/error.h"
 
 Macro *head = NULL;  // מצביע לראש הרשימה
 
@@ -132,9 +133,11 @@ void pre_assembler(const char *filename)
     char **macro_content = NULL;
     int inside_macro = 0;
     int line_count = 0;
+    int new_line_count = 0;
 
     while (fgets(line, sizeof(line), input_file))
     {
+        line_count++;
         remove_extra_spaces(line);
         line[strcspn(line, "\n")] = '\0'; // הסרת תו סוף שורה
 
@@ -150,28 +153,35 @@ void pre_assembler(const char *filename)
 
         if (strncmp(line, "mcro ", 5) == 0) { 
             inside_macro = 1;
-            line_count = 0;
-            sscanf(line + 5, "%s", macro_name);
+            new_line_count = 0;
+            sscanf(line + 5, "%[^\n]", macro_name);
+
+            if(validate_macro_name(macro_name ,filename, line_count)!= 0){
+                continue;
+            }
             macro_content = NULL;
         } 
         else if (inside_macro && strncmp(line, "mcroend", 7) == 0) { 
-            add_macro(macro_name, macro_content, line_count);
+            //add macro only if macro_end is valid
+            if (validate_macro_end(line,filename, line_count)==0){
+                add_macro(macro_name, macro_content, new_line_count);
+            }
+           
             inside_macro = 0;
-
             // שחרור הזיכרון הזמני ששימש לאחסון השורות
-            for (int i = 0; i < line_count; i++) {
+            for (int i = 0; i < new_line_count; i++) {
                 free(macro_content[i]);
             }
             free(macro_content);
         } 
         else if (inside_macro) { 
-            macro_content = (char **)realloc(macro_content, (line_count + 1) * sizeof(char *));
+            macro_content = (char **)realloc(macro_content, (new_line_count + 1) * sizeof(char *));
             if (!macro_content) {
                 printf("Memory allocation failed while storing macro content.\n");
                 exit(1);
             }
-            macro_content[line_count] = strdup(line);
-            line_count++;
+            macro_content[new_line_count] = strdup(line);
+            new_line_count++;
         } 
         else { 
             Macro *macro = find_macro(line);
@@ -252,6 +262,7 @@ void check_the_file(const char *filename_ad)
     fprintf(file_ah, "Number of lines: %d\n", line_count);
     fclose(file_ah);
     free(filename_ah);
+    
 }
 
 // שחרור הזיכרון של הרשימה המקושרת
@@ -270,4 +281,56 @@ void free_macros() {
         current = next;
     }
     head = NULL;
+}
+
+int validate_macro_name(char *macro_name ,const char *filename , int line_count) {
+    int valid = 0;
+    //The line contains unnecessary characters.
+    if (strchr(macro_name, ' ') != NULL) {
+        print_syntax_error(ERROR_CODE_10, filename ,line_count);
+        valid = 1;
+    }
+
+    //The macro name cannot be an instruction
+    for (int i = 0; i < reserved_count; i++) {
+        if (strcmp(macro_name, reserved_words[i]) == 0) {
+            print_syntax_error(ERROR_CODE_9, filename , line_count);
+            valid = 1;
+        }
+    }
+    
+    return valid; 
+}
+
+int validate_macro_end(char *line, const char *filename, int line_count) {
+    char *ptr = line + 7;
+
+    if (*ptr != '\0' && *ptr != '\n') {
+        print_syntax_error(ERROR_CODE_11, filename , line_count);
+        return 1;
+    }
+
+    return 0; // אין שגיאה
+
+}
+
+void delete_am_file(const char *filename) {
+
+    size_t len = strlen(filename) + strlen("test-files/") + strlen(".am") + 1;
+
+    char *am_filename = (char *)malloc(len);
+    if (am_filename == NULL) {
+        perror("Memory allocation failed");
+        return;
+    }
+
+    snprintf(am_filename, len, "test-files/%s.am", filename);
+
+    if (remove(am_filename) == 0) {
+        printf("File %s deleted successfully.\n", am_filename);
+    } else {
+        perror("Error deleting file");
+    }
+
+    free(am_filename);
 }
