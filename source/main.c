@@ -32,6 +32,11 @@ int main(int argc, char *argv[]) {
             snprintf(filename_ad, sizeof(filename_ad), "test-files/%s.am", argv[i]);
             check_the_file(filename_ad);
             first_pass(filename_ad);
+            if (FOUND_ERROR_IN_FIRST_PASS){
+                FOUND_ERROR_IN_FIRST_PASS = 0;
+                continue;
+            }
+            //second_pass
         } else {
             printf("in main not found\n");
             printf("File %s.as not found.\n", argv[i]);

@@ -18,13 +18,17 @@ typedef enum error_codes
     ERROR_CODE_9,
     ERROR_CODE_10,
     ERROR_CODE_11,
-    ERROR_CODE_12
-
+    ERROR_CODE_12,
+    ERROR_CODE_13,
+    ERROR_CODE_14,
+    ERROR_CODE_15,
+    ERROR_CODE_16
     
 
 }error_codes;
 
 extern int FOUND_ERROR_IN_PRE_ASSEMBLER;
+extern int FOUND_ERROR_IN_FIRST_PASS;
 
 
 void print_system_error(int error_code);

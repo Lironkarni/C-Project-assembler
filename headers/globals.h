@@ -14,4 +14,5 @@
 /*minimum parameters the program needs to start*/
 #define MIN_PARAM 2
 
-
+#define COMMENT ';'
+#define COLON ':'

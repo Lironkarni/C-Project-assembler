@@ -11,8 +11,8 @@ int first_pass(char *file)
 
     if (process_line(file) != 0)
     {
+        /*if errors found, dont make obj file and entries, externals but continue to go over this file*/
         printf("found errors, don't move to next file\n");
-        return 1;
     }
     else
     {
@@ -32,12 +32,9 @@ int process_line(char *file)
     if (input_file == NULL)
     {
         print_system_error(ERROR_CODE_4);
-        /*return ??*/
     }
     else
     {
-        // printf("start first pass %s\n", file);
-        // rewind(input_file);
         while (fgets(temp_line, sizeof(temp_line), input_file))
         {
             printf("%s",temp_line);

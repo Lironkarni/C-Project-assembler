@@ -287,14 +287,14 @@ int validate_macro_name(char *macro_name ,const char *filename , int line_count)
     int valid = 0;
     //The line contains unnecessary characters.
     if (strchr(macro_name, ' ') != NULL) {
-        print_syntax_error(ERROR_CODE_10, filename ,line_count);
+        print_syntax_error(ERROR_CODE_15, filename ,line_count);
         valid = 1;
     }
 
     //The macro name cannot be an instruction
     for (int i = 0; i < reserved_count; i++) {
         if (strcmp(macro_name, reserved_words[i]) == 0) {
-            print_syntax_error(ERROR_CODE_9, filename , line_count);
+            print_syntax_error(ERROR_CODE_14, filename , line_count);
             valid = 1;
         }
     }
@@ -306,7 +306,7 @@ int validate_macro_end(char *line, const char *filename, int line_count) {
     char *ptr = line + 7;
 
     if (*ptr != '\0' && *ptr != '\n') {
-        print_syntax_error(ERROR_CODE_11, filename , line_count);
+        print_syntax_error(ERROR_CODE_16, filename , line_count);
         return 1;
     }
 
@@ -333,4 +333,29 @@ void delete_am_file(const char *filename) {
     }
 
     free(am_filename);
+}
+
+Line *create_line(char* temp_line,char* file,FILE *input_file,int line_number){
+    Line *new_line;
+    new_line=(Line *)malloc(sizeof(Line));
+    if(new_line==NULL){
+        print_system_error(ERROR_CODE_3);
+        return NULL;
+    }
+    
+    new_line->file_name=(char *)malloc(sizeof(file)+1);
+    if(new_line->file_name==NULL){
+        print_system_error(ERROR_CODE_3);
+       return NULL;
+    }
+    strcpy(new_line->file_name,file);
+    new_line->data=(char *)malloc(sizeof(temp_line)+1);
+    if(new_line->data==NULL){
+        print_system_error(ERROR_CODE_3);
+       return NULL;
+    }
+    strcpy(new_line->data,temp_line);
+    new_line->line_number=line_number;
+
+    return new_line;
 }
