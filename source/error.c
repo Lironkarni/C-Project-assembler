@@ -15,7 +15,8 @@ error errors[]={
     {ERROR_CODE_10, "label name is invalid, label name must start with alphabetic char"},
     {ERROR_CODE_11, "label name is invalid, more than 31 chars"},
     {ERROR_CODE_12, "label name is invalid, label should contain alphabetic and digits only"},
-    {ERROR_CODE_13, " "},
+    {ERROR_CODE_17, "label name is invalid, label name cant be equals to macro name"},
+    {ERROR_CODE_13, "MACRO NAME IS INVALID (CANNOT BE AN DIRECTIVE NAME)."},
     {ERROR_CODE_14, "MACRO NAME IS INVALID (CANNOT BE AN INSTRUCTION NAME)."},
     {ERROR_CODE_15, "EXTRA CHARACTERS FOUND IN MACRO OPEN LINE."},
     {ERROR_CODE_16, "EXTRA CHARACTERS FOUND IN MACRO CLOSE LINE."}
@@ -37,7 +38,7 @@ void print_system_error(int error_code){
 
 void print_syntax_error(int error_code, const char* file_name, int line_number)
 {
-    if (error_code==ERROR_CODE_16 ||error_code==ERROR_CODE_14||error_code==ERROR_CODE_15 ){
+    if (error_code==ERROR_CODE_16 ||error_code==ERROR_CODE_14||error_code==ERROR_CODE_15 ||error_code==ERROR_CODE_13 ){
         FOUND_ERROR_IN_PRE_ASSEMBLER = 1;
     }
     printf("ERROR: code %d | in file: %s | at line: %d \n%s\n", error_code, file_name, line_number, errors[error_code].err_message);

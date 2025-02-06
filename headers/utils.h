@@ -8,8 +8,8 @@
 
 #define MAX_LINE_LENGTH 1024
 
-static const char *reserved_words[] = {"mov","cmp", "add", "sub", "lea","clr", "not","inc", "dec", "jmp", "bne", "jsr", "red", "prn", "rts", "stop", "data","string","extern" };
-static const int reserved_count = sizeof(reserved_words) / sizeof(reserved_words[0]);
+static const char *directive_words[] ={"data","string","extern","entry"}; //מילות הנחייה
+static const int directive_count = sizeof(directive_words) / sizeof(directive_words[0]);
 
 typedef struct Macro {
     char *name;             // שם המקרו בזיכרון דינאמי
@@ -36,8 +36,8 @@ char *load_file(char *filename);
 void check_the_file(const char *filename_ad);
 int is_empty_line(const char *line);
 void free_macros(); // פונקציה לשחרור זיכרון של הרשימה המקושרת
-int validate_macro_name(char *macro_name , const char *filename , int line);
-int validate_macro_end(char *line, const char *filename, int line_count);
+int is_valid_macro_name(char *macro_name , const char *filename , int line);
+int is_valid_macro_end(char *line, const char *filename, int line_count);
 void delete_am_file(const char *filename);
 
 Line *create_line(char* temp_line,char* file,FILE *input_file,int line_number); //create new line

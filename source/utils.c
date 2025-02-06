@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "../headers/utils.h"
 #include "../headers/error.h"
+#include "../headers/process_input.h"
 
 Macro *head = NULL;  // מצביע לראש הרשימה
 
@@ -156,14 +157,14 @@ void pre_assembler(const char *filename)
             new_line_count = 0;
             sscanf(line + 5, "%[^\n]", macro_name);
 
-            if(validate_macro_name(macro_name ,filename, line_count)!= 0){
+            if(is_valid_macro_name(macro_name ,filename, line_count)!= 0){
                 continue;
             }
             macro_content = NULL;
         } 
         else if (inside_macro && strncmp(line, "mcroend", 7) == 0) { 
             //add macro only if macro_end is valid
-            if (validate_macro_end(line,filename, line_count)==0){
+            if (is_valid_macro_end(line,filename, line_count)==0){
                 add_macro(macro_name, macro_content, new_line_count);
             }
            
@@ -283,7 +284,7 @@ void free_macros() {
     head = NULL;
 }
 
-int validate_macro_name(char *macro_name ,const char *filename , int line_count) {
+int is_valid_macro_name(char *macro_name ,const char *filename , int line_count) {
     int valid = 0;
     //The line contains unnecessary characters.
     if (strchr(macro_name, ' ') != NULL) {
@@ -291,18 +292,30 @@ int validate_macro_name(char *macro_name ,const char *filename , int line_count)
         valid = 1;
     }
 
-    //The macro name cannot be an instruction
-    for (int i = 0; i < reserved_count; i++) {
-        if (strcmp(macro_name, reserved_words[i]) == 0) {
-            print_syntax_error(ERROR_CODE_14, filename , line_count);
+    int operation_count = SUM_OPERATIONS;
+    //check if mcro name equals to op_word
+    for (int i = 0; i < operation_count; i++) {
+        if (strcmp(macro_name, operation_list[i].operation_name) == 0) {
+            print_syntax_error(ERROR_CODE_14, filename, line_count);
+            valid = 1;
+            break;  
+        }
+    }
+    //check if mcro name equals to directive_word
+    for (int i = 0; i < directive_count; i++) {
+        if (strcmp(macro_name, directive_words[i]) == 0) {
+            print_syntax_error(ERROR_CODE_13, filename , line_count);
             valid = 1;
         }
     }
+
+
+
     
     return valid; 
 }
 
-int validate_macro_end(char *line, const char *filename, int line_count) {
+int is_valid_macro_end(char *line, const char *filename, int line_count) {
     char *ptr = line + 7;
 
     if (*ptr != '\0' && *ptr != '\n') {

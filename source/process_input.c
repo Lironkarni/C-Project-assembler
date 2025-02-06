@@ -3,7 +3,7 @@
 #include "../headers/globals.h"
 #include "../headers/utils.h"
 
-op_code operation_list[] =
+op_code operation_list[SUM_OPERATIONS] =
 {
 	{"mov",0,0, {2, METHOD_0_1_3,METHOD_1_3}},
 	{"cmp",1,0,{2,METHOD_0_1_3,METHOD_0_1_3}},
@@ -79,13 +79,14 @@ int is_valid_label(char* label, Line *line)
 	//V-check if length is lower than 32 (MAX_LABEL_LENGTH)
 	//check if label name is saved assembly name
 	//check if label as been defind yet
-	//check if this is not a name of a macro
+	//V-check if this is not a name of a macro
 
 	
 	int i = 0, len;
 	op_code op;
 	len = strlen(label);
 	if (!isalpha(label[0])){
+		//label name is not starting with alphabet character
 		print_syntax_error(ERROR_CODE_10, line->file_name,line->line_number);
 		return 1;
 	}
@@ -95,15 +96,25 @@ int is_valid_label(char* label, Line *line)
 	}
 	while (label[i] != '\0')
 		if(!isalpha(label[i]) && !isdigit(label[i])){
+			//label name have non alpha-numeric character in it
 			print_syntax_error(ERROR_CODE_12,line->file_name,line->line_number);
 			return 1;
 		}
 
+	 if (find_macro(label) != NULL) {
+		//label name is equals to macro
+        print_syntax_error(ERROR_CODE_17, line->file_name, line->line_number);
+        return 1;
+    }
+
 	//see if its saved assembly name
 	op=check_if_instruction(label);
 	if(strcmp(op.operation_name,"0")==0){
+		//label name is equals to operation
 		print_syntax_error(ERROR_CODE_9,line->file_name,line->line_number);
 		return 1;
 	}
+
+
 	return 0;
 }
