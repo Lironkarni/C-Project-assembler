@@ -74,12 +74,12 @@ void remove_spaces(char* line)
 int is_valid_label(char* label, Line *line)
 {
 	
-	/*V-check its starts with alphbetic char*/
-	/*V-check all chars are alphabetic or digits*/
-	/*V-check if length is lower than 32 (MAX_LABEL_LENGTH)
-	check if label name is saved assembly name
-	check if label as been defind yet
-	/*check if this is not a name of a macro*/
+	//V-check its starts with alphbetic char
+	//V-check all chars are alphabetic or digits
+	//V-check if length is lower than 32 (MAX_LABEL_LENGTH)
+	//check if label name is saved assembly name
+	//check if label as been defind yet
+	//check if this is not a name of a macro
 
 	
 	int i = 0, len;

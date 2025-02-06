@@ -15,10 +15,13 @@ error errors[]={
     {ERROR_CODE_10, "label name is invalid, label name must start with alphabetic char"},
     {ERROR_CODE_11, "label name is invalid, more than 31 chars"},
     {ERROR_CODE_12, "label name is invalid, label should contain alphabetic and digits only"},
-    {ERROR_CODE_13, ""},
+    {ERROR_CODE_13, " "},
     {ERROR_CODE_14, "MACRO NAME IS INVALID (CANNOT BE AN INSTRUCTION NAME)."},
     {ERROR_CODE_15, "EXTRA CHARACTERS FOUND IN MACRO OPEN LINE."},
     {ERROR_CODE_16, "EXTRA CHARACTERS FOUND IN MACRO CLOSE LINE."}
+
+    
+
 };
 
 int FOUND_ERROR_IN_PRE_ASSEMBLER = 0;
