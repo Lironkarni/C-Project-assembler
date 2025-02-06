@@ -40,6 +40,6 @@ int is_valid_macro_name(char *macro_name , const char *filename , int line);
 int is_valid_macro_end(char *line, const char *filename, int line_count);
 void delete_am_file(const char *filename);
 
-Line *create_line(char* temp_line,char* file,FILE *input_file,int line_number); //create new line
+Line *create_line(char* temp_line,char* file,int line_number); //create new line
 
 #endif // FILE_COPY_H

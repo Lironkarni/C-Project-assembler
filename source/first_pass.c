@@ -51,20 +51,16 @@ int process_line(char *file)
                         ;     /*clear the rest of the line*/
                     continue; /*don't check this row, move to the next one*/
                 }
-            if (temp_line[0] == COMMENT) /*line is a comment*/
-                continue;
-            if (is_empty_line(temp_line) == 0)
-                continue;
 
             /*make line*/
-            line = create_line(temp_line,file,input_file,line_number);
+            line = create_line(temp_line,file,line_number);
             if(line==NULL){
                 /*TODO-need to free all memery*/
                 exit(1);
             }
 
             /*get the fisrt word and check if this is guiding or instructive sentence*/
-            get_word(line->data,first_word);
+            first_word=get_word(line->data);
             process_word(line, first_word);
         }
     }
@@ -77,23 +73,21 @@ void process_word(Line *line, char *first_word)
 {
     op_code curr_op;
     int word_len, is_label, num_args;
-    char *line_ptr;
+    char *line_ptr, *second_word;
 
     printf("first word is %s", first_word);
     /*check if its instructive sentence*/
     curr_op = check_if_instruction(first_word);
     if (strcmp(curr_op.operation_name, "0") == 0)
     {
-        printf("not instruction");
-        /*need to check if guiding command*/
-        /*TODO*/
+        printf("not instruction, or giuding or label\n");
         /*if its label, need to check if its valid label's name*/
         word_len = strlen(first_word);
         if (first_word[word_len - 1] == COLON){   /*if its label*/
-            is_label = is_valid_label(first_word, line); /* if its valid label*/
-            if(!is_label) 
-                /*TODO- add the label to chart of labels*/
-                printf("is label- Yes");
+            is_label = is_valid_label(first_word, line); /* if its valid label- is_label=0*/
+            memmove(line->data, line->data, word_len+1);
+            printf("%s", line->data);
+            
         }
     }
     else /*its instruction*/

@@ -348,7 +348,7 @@ void delete_am_file(const char *filename) {
     free(am_filename);
 }
 
-Line *create_line(char* temp_line,char* file,FILE *input_file,int line_number){
+Line *create_line(char* temp_line,char* file,int line_number){
     Line *new_line;
     new_line=(Line *)malloc(sizeof(Line));
     if(new_line==NULL){

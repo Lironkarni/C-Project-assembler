@@ -50,5 +50,5 @@ typedef struct label
 extern op_code operation_list[SUM_OPERATIONS];
 
 op_code check_if_instruction(char* first_word);
-void get_word(char* line, char* word);
+char* get_word(char* line);
 int is_valid_label(char* label, Line *line);

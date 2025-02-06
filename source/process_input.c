@@ -34,9 +34,14 @@ op_code operation_list[SUM_OPERATIONS] =
 //	}
 //}
 
-void get_word(char* line, char* word)
+char* get_word(char* line)
 {
-	printf("got to get word");
+	printf("got to get word\n");
+	char *word=(char *)malloc(strlen(line) + 1);
+	if(word==NULL){
+		print_system_error(ERROR_CODE_3);
+		exit(1);
+	}
 	int i = 0;
 	while (line[i] != '\0' && line[i] != ' ')
 	{
@@ -44,6 +49,7 @@ void get_word(char* line, char* word)
 		i++;
 	}
 	word[i] = '\0';
+	return word;
 }
 
 op_code check_if_instruction(char* word)
@@ -94,8 +100,8 @@ int is_valid_label(char* label, Line *line)
 		print_syntax_error(ERROR_CODE_11, line->file_name,line->line_number);
 		return 1;
 	}
-	while (label[i] != '\0')
-		if(!isalpha(label[i]) && !isdigit(label[i])){
+	while (i< len-1)
+		if(!isalnum(label[i++])){
 			//label name have non alpha-numeric character in it
 			print_syntax_error(ERROR_CODE_12,line->file_name,line->line_number);
 			return 1;
@@ -109,12 +115,11 @@ int is_valid_label(char* label, Line *line)
 
 	//see if its saved assembly name
 	op=check_if_instruction(label);
-	if(strcmp(op.operation_name,"0")==0){
+	if(strcmp(op.operation_name,"0")!=0){
 		//label name is equals to operation
 		print_syntax_error(ERROR_CODE_9,line->file_name,line->line_number);
 		return 1;
 	}
-
 
 	return 0;
 }
