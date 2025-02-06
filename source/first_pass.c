@@ -4,10 +4,14 @@
 #include "../headers/first_pass.h"
 #include "../headers/process_input.h"
 
+
+
 /*start the first pass*/
 int first_pass(char *file)
 {
-    // int IC = 100, DC = 0;
+    Symbol *symbol_table_head = NULL; 
+
+    int IC = 100, DC = 0;
 
     if (process_line(file) != 0)
     {
@@ -64,8 +68,9 @@ int process_line(char *file)
             process_word(line, first_word);
         }
     }
-    return 0;
     fclose(input_file);
+    return 0;
+    
 }
 
 
@@ -85,8 +90,24 @@ void process_word(Line *line, char *first_word)
         word_len = strlen(first_word);
         if (first_word[word_len - 1] == COLON){   /*if its label*/
             is_label = is_valid_label(first_word, line); /* if its valid label- is_label=0*/
-            memmove(line->data, line->data, word_len+1);
-            printf("%s", line->data);
+
+            second_word = line->data + word_len + 1;
+            printf("%s", second_word);
+            if(is_string_data(second_word)){
+                add_symbol(second_word, IC, 1, 0, 0, 0);
+            }
+
+            if(is_entry_extern(second_word)){
+                add_symbol(second_word, IC, 0, 1, 0, 0);
+            }
+
+            if (is_op_code(second_word)){
+                add_symbol(second_word, IC, 0, 1, 0, 0);
+
+            }
+
+
+            
             
         }
     }
@@ -124,4 +145,31 @@ void process_word(Line *line, char *first_word)
             break;
         }
     }
+}
+
+
+void add_symbol(char *name, int address, int isData, int isCode, int isExtern, int isEntry) {
+    Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
+    if (!new_symbol) {
+        printf("Memory allocation failed\n");
+        return;
+    }
+    strcpy(new_symbol->name, name);
+    new_symbol->address = address;
+    new_symbol->isData = isData;
+    new_symbol->isCode = isCode;
+    new_symbol->isExtern = isExtern;
+    new_symbol->isEntry = isEntry;
+    new_symbol->next = symbol_table_head; 
+    symbol_table_head = new_symbol;
+}
+
+Symbol *find_symbol(char *name) {
+    Symbol *current = symbol_table_head;
+    while (current) {
+        if (strcmp(current->name, name) == 0)
+            return current;
+        current = current->next;
+    }
+    return NULL; 
 }
