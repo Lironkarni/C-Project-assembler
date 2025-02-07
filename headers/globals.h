@@ -1,3 +1,5 @@
+#ifndef GLOBALS_H
+#define GLOBALS_H
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -14,10 +16,7 @@
 /*minimum parameters the program needs to start*/
 #define MIN_PARAM 2
 
-
-
-int IC = 100; 
-int DC = 0; 
-
 #define COMMENT ';'
 #define COLON ':'
+
+#endif

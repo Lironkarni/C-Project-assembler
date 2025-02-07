@@ -4,14 +4,13 @@
 #include "../headers/first_pass.h"
 #include "../headers/process_input.h"
 
-
+static int IC = 100;
+static int DC = 0; 
 
 /*start the first pass*/
 int first_pass(char *file)
 {
-    Symbol *symbol_table_head = NULL; 
-
-    int IC = 100, DC = 0;
+    Symbol *symbol_table_head = NULL;
 
     if (process_line(file) != 0)
     {
@@ -41,7 +40,7 @@ int process_line(char *file)
     {
         while (fgets(temp_line, sizeof(temp_line), input_file))
         {
-            printf("%s",temp_line);
+            printf("%s", temp_line);
             line_number++;
             line_len = strlen(temp_line);        /*get line length*/
             if (temp_line[line_len - 1] == '\n') /*put '\0' at the end of each line*/
@@ -57,22 +56,21 @@ int process_line(char *file)
                 }
 
             /*make line*/
-            line = create_line(temp_line,file,line_number);
-            if(line==NULL){
+            line = create_line(temp_line, file, line_number);
+            if (line == NULL)
+            {
                 /*TODO-need to free all memery*/
                 exit(1);
             }
 
             /*get the fisrt word and check if this is guiding or instructive sentence*/
-            first_word=get_word(line->data);
+            first_word = get_word(line->data);
             process_word(line, first_word);
         }
     }
     fclose(input_file);
     return 0;
-    
 }
-
 
 void process_word(Line *line, char *first_word)
 {
@@ -80,7 +78,7 @@ void process_word(Line *line, char *first_word)
     int word_len, is_label, num_args;
     char *line_ptr, *second_word;
 
-    printf("first word is %s", first_word);
+    printf("first word is %s\n", first_word);
     /*check if its instructive sentence*/
     curr_op = check_if_instruction(first_word);
     if (strcmp(curr_op.operation_name, "0") == 0)
@@ -88,27 +86,26 @@ void process_word(Line *line, char *first_word)
         printf("not instruction, or giuding or label\n");
         /*if its label, need to check if its valid label's name*/
         word_len = strlen(first_word);
-        if (first_word[word_len - 1] == COLON){   /*if its label*/
+        if (first_word[word_len - 1] == COLON)
+        {                                                /*if its label*/
             is_label = is_valid_label(first_word, line); /* if its valid label- is_label=0*/
 
-            second_word = line->data + word_len + 1;
-            printf("%s", second_word);
-            if(is_string_data(second_word)){
+            second_word = get_word(NULL);
+            printf("second word is: %s\n", second_word);
+            if (is_string_data(second_word))
+            {
                 add_symbol(second_word, IC, 1, 0, 0, 0);
             }
 
-            if(is_entry_extern(second_word)){
+            if (is_entry_extern(second_word))
+            {
                 add_symbol(second_word, IC, 0, 1, 0, 0);
             }
 
-            if (is_op_code(second_word)){
+            if (is_op_code(second_word))
+            {
                 add_symbol(second_word, IC, 0, 1, 0, 0);
-
             }
-
-
-            
-            
         }
     }
     else /*its instruction*/
@@ -148,10 +145,12 @@ void process_word(Line *line, char *first_word)
 }
 
 
-void add_symbol(char *name, int address, int isData, int isCode, int isExtern, int isEntry) {
+void add_symbol(char *name, int address, int isData, int isCode, int isExtern, int isEntry)
+{
     Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
-    if (!new_symbol) {
-        printf("Memory allocation failed\n");
+    if (!new_symbol)
+    {
+        print_system_error(ERROR_CODE_3);
         return;
     }
     strcpy(new_symbol->name, name);
@@ -160,16 +159,18 @@ void add_symbol(char *name, int address, int isData, int isCode, int isExtern, i
     new_symbol->isCode = isCode;
     new_symbol->isExtern = isExtern;
     new_symbol->isEntry = isEntry;
-    new_symbol->next = symbol_table_head; 
+    new_symbol->next = symbol_table_head;
     symbol_table_head = new_symbol;
 }
 
-Symbol *find_symbol(char *name) {
+Symbol *find_symbol(char *name)
+{
     Symbol *current = symbol_table_head;
-    while (current) {
+    while (current)
+    {
         if (strcmp(current->name, name) == 0)
             return current;
         current = current->next;
     }
-    return NULL; 
+    return NULL;
 }

@@ -36,19 +36,39 @@ op_code operation_list[SUM_OPERATIONS] =
 
 char* get_word(char* line)
 {
-	printf("got to get word\n");
-	char *word=(char *)malloc(strlen(line) + 1);
+	static char* current=NULL;
+	//if its the first word in the line
+	if(line!=NULL){
+		current=line;
+	}
+	//got to the end of the row
+	if(*current=='\0'){
+		return NULL;
+	}
+	char *word=current;
+	    // skip spaces
+    while (*current == ' ') {
+        current++;
+    }
+	   // size of the current word
+    int len = 0;
+    while (current[len] != '\0' && current[len] != ' ') {
+        len++;
+    }
+	//allocate memory to the word
+	word=(char *)malloc(len+ 1);
 	if(word==NULL){
 		print_system_error(ERROR_CODE_3);
 		exit(1);
 	}
-	int i = 0;
-	while (line[i] != '\0' && line[i] != ' ')
-	{
-		word[i] = line[i];
-		i++;
+	strncpy(word,current,len);
+	word[len]='\0';
+
+	current+=len; //put current on next word
+	if(*current==' '){
+		current++;
 	}
-	word[i] = '\0';
+	
 	return word;
 }
 
