@@ -16,7 +16,13 @@
 /*minimum parameters the program needs to start*/
 #define MIN_PARAM 2
 
+/*initial capacity for size of array of numbers (.data)*/
+#define INIT_CAPACITY 10
+
 #define COMMENT ';'
 #define COLON ':'
+#define QUOTE '"'
+#define COMMA ','
+#define DECIMAL 10
 
 #endif

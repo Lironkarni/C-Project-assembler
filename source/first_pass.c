@@ -5,12 +5,11 @@
 #include "../headers/process_input.h"
 
 static int IC = 100;
-static int DC = 0; 
+static int DC = 0;
 
-char* instruction_list[]={".data", ".string", ".entry", ".extern"};
+char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 
 Symbol *symbol_table_head = NULL;
-
 
 /*start the first pass*/
 int first_pass(char *file)
@@ -81,7 +80,8 @@ void process_word(Line *line, char *first_word)
 {
     op_code curr_op;
     int word_len, is_label, num_args, instruction_index;
-    char *line_ptr, *second_word;
+    char *line_ptr, *second_word, *string_value;
+    int *numbers = NULL;
 
     printf("first word is %s\n", first_word);
     /*check if its instructive sentence*/
@@ -97,19 +97,28 @@ void process_word(Line *line, char *first_word)
 
             second_word = get_word(NULL);
             printf("second word is: %s\n", second_word);
-            instruction_index=which_instruction(second_word);
+            instruction_index = which_instruction(second_word);
             switch (instruction_index)
             {
             case 0:
+                get_data(line, instruction_index, &numbers);
+                break;
             case 1:
+                string_value = get_word(NULL);
+                if (if_valid_string(string_value, line))
+                {
+                    FOUND_ERROR_IN_FIRST_PASS = 1;
+                }
+                break;
             case 2:
             case 3:
                 /* code */
-                add_symbol(line,second_word,DC,(guide_type)instruction_index);
+                add_symbol(line, second_word, DC, (guide_type)instruction_index);
+                // need here to allocate memory to the data and update DC
                 break;
             case -1:
                 printf("first word- label, second word- NOT instruction, maybe a operation\n");
-                break;    
+                break;
             default:
                 break;
             }
@@ -154,34 +163,36 @@ void process_word(Line *line, char *first_word)
 int which_instruction(char *word)
 {
     int i;
-    for(i=0;i<INSTRUCTION_COUNT;i++){
-        if(strcmp(word, instruction_list[i])==0)
-        return i;
+    for (i = 0; i < INSTRUCTION_COUNT; i++)
+    {
+        if (strcmp(word, instruction_list[i]) == 0)
+            return i;
     }
     return -1;
 }
 
-void add_symbol(Line *line,char *name, int address, guide_type type)
+void add_symbol(Line *line, char *name, int address, guide_type type)
 {
-    printf("%s %d %d\n",name,address, type);
-    if(find_symbol(name)!=NULL){
-        Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
-    if (!new_symbol)
+    printf("%s %d %d\n", name, address, type);
+    if (find_symbol(name) != NULL)
     {
-        print_system_error(ERROR_CODE_3);
+        Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
+        if (!new_symbol)
+        {
+            print_system_error(ERROR_CODE_3);
+            return;
+        }
+        strcpy(new_symbol->name, name);
+        new_symbol->address = address;
+        new_symbol->type = type;
+        new_symbol->next = symbol_table_head;
+        symbol_table_head = new_symbol;
+    }
+    else
+    {
+        print_syntax_error(ERROR_CODE_18, line->file_name, line->line_number);
         return;
     }
-    strcpy(new_symbol->name, name);
-    new_symbol->address = address;
-    new_symbol->type= type;
-    new_symbol->next = symbol_table_head;
-    symbol_table_head = new_symbol;
-    }
-    else{
-        print_syntax_error(ERROR_CODE_18,line->file_name, line->line_number);
-        return;
-    }
-    
 }
 
 Symbol *find_symbol(char *name)
@@ -194,4 +205,87 @@ Symbol *find_symbol(char *name)
         current = current->next;
     }
     return NULL;
+}
+
+int if_valid_string(char *word, Line *line)
+{
+    int len;
+    len = strlen(word);
+    if (word[0] != QUOTE || word[len - 1] != QUOTE)
+    {
+        print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
+        return 1;
+    }
+    if (get_word(NULL) != NULL)
+    {
+        print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+        return 1;
+    }
+    // TODO- more possible errors  ??
+    return 0;
+}
+
+/*this function get the data if its ".data", and check if its valid or there are errors*/
+int get_data(Line *line, int inst_index, int **numbers)
+{
+    int expect_number = 1; // 0- expect number, 1- expect comma
+    int capacity, count = 0;
+    char *data_ptr = strstr(line->data, instruction_list[inst_index]);
+    data_ptr += strlen(instruction_list[inst_index]);
+    while (*data_ptr == ' ')
+        data_ptr++;
+
+    capacity = INIT_CAPACITY;
+    *numbers = (int *)malloc(capacity * sizeof(int));
+    if (*numbers == NULL)
+    {
+        print_system_error(ERROR_CODE_3);
+        exit(1);
+    }
+    while (*data_ptr != '\0')
+    {
+        if (expect_number)
+        {
+            if (!isdigit(*data_ptr))
+            {
+                print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
+            if (count >= capacity)
+            {
+                capacity *= 2;
+                *numbers = (int *)realloc(*numbers, capacity * sizeof(int));
+                if (*numbers == NULL)
+                {
+                    print_system_error(ERROR_CODE_3);
+                    exit(1);
+                }
+            }
+            (*numbers)[count++] = strtol(data_ptr, &data_ptr, DECIMAL);
+            expect_number = 0; // expecting now a comma
+        }
+
+        else
+        {
+            if (*data_ptr != COMMA)
+            {
+                print_syntax_error(ERROR_CODE_23, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
+            expect_number = 1;
+            data_ptr++;
+        }
+        while (*data_ptr == ' ')
+            data_ptr++;
+    }
+    // check if line ended with comma
+    if (expect_number)
+    {
+        print_syntax_error(ERROR_CODE_24, line->file_name, line->line_number);
+        free(*numbers);
+        return 1;
+    }
+    return 0;
 }

@@ -31,5 +31,7 @@ void process_word(Line* line, char* first_word);
 int which_instruction(char *word);
 void add_symbol(Line *line, char *word,int IC,guide_type type);
 Symbol *find_symbol(char *name);
+int if_valid_string(char *word, Line *line);
+int get_data(Line *line, int inst_index, int **numbers);
 
 #endif
