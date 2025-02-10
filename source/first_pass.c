@@ -7,6 +7,11 @@
 static int IC = 100;
 static int DC = 0; 
 
+char* instruction_list[]={".data", ".string", ".entry", ".extern"};
+
+Symbol *symbol_table_head = NULL;
+
+
 /*start the first pass*/
 int first_pass(char *file)
 {
@@ -75,7 +80,7 @@ int process_line(char *file)
 void process_word(Line *line, char *first_word)
 {
     op_code curr_op;
-    int word_len, is_label, num_args;
+    int word_len, is_label, num_args, instruction_index;
     char *line_ptr, *second_word;
 
     printf("first word is %s\n", first_word);
@@ -83,7 +88,7 @@ void process_word(Line *line, char *first_word)
     curr_op = check_if_instruction(first_word);
     if (strcmp(curr_op.operation_name, "0") == 0)
     {
-        printf("not instruction, or giuding or label\n");
+        printf("not operation, its or giuding or label\n");
         /*if its label, need to check if its valid label's name*/
         word_len = strlen(first_word);
         if (first_word[word_len - 1] == COLON)
@@ -92,23 +97,25 @@ void process_word(Line *line, char *first_word)
 
             second_word = get_word(NULL);
             printf("second word is: %s\n", second_word);
-            if (is_string_data(second_word))
+            instruction_index=which_instruction(second_word);
+            switch (instruction_index)
             {
-                add_symbol(second_word, IC, 1, 0, 0, 0);
-            }
-
-            if (is_entry_extern(second_word))
-            {
-                add_symbol(second_word, IC, 0, 1, 0, 0);
-            }
-
-            if (is_op_code(second_word))
-            {
-                add_symbol(second_word, IC, 0, 1, 0, 0);
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                /* code */
+                add_symbol(line,second_word,DC,(guide_type)instruction_index);
+                break;
+            case -1:
+                printf("first word- label, second word- NOT instruction, maybe a operation\n");
+                break;    
+            default:
+                break;
             }
         }
     }
-    else /*its instruction*/
+    else /*its operation*/
     {
         /*need to check how many arguments*/
         line_ptr = line->data; // Create a pointer to the start of the line
@@ -144,10 +151,21 @@ void process_word(Line *line, char *first_word)
     }
 }
 
-
-void add_symbol(char *name, int address, int isData, int isCode, int isExtern, int isEntry)
+int which_instruction(char *word)
 {
-    Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
+    int i;
+    for(i=0;i<INSTRUCTION_COUNT;i++){
+        if(strcmp(word, instruction_list[i])==0)
+        return i;
+    }
+    return -1;
+}
+
+void add_symbol(Line *line,char *name, int address, guide_type type)
+{
+    printf("%s %d %d\n",name,address, type);
+    if(find_symbol(name)!=NULL){
+        Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
     if (!new_symbol)
     {
         print_system_error(ERROR_CODE_3);
@@ -155,12 +173,15 @@ void add_symbol(char *name, int address, int isData, int isCode, int isExtern, i
     }
     strcpy(new_symbol->name, name);
     new_symbol->address = address;
-    new_symbol->isData = isData;
-    new_symbol->isCode = isCode;
-    new_symbol->isExtern = isExtern;
-    new_symbol->isEntry = isEntry;
+    new_symbol->type= type;
     new_symbol->next = symbol_table_head;
     symbol_table_head = new_symbol;
+    }
+    else{
+        print_syntax_error(ERROR_CODE_18,line->file_name, line->line_number);
+        return;
+    }
+    
 }
 
 Symbol *find_symbol(char *name)
