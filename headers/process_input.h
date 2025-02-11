@@ -33,21 +33,6 @@ typedef struct op_code
 
 }op_code;
 
-// typedef enum guide_type
-// {
-// 	DATA,
-// 	STRING,
-// 	ENTRY,
-// 	EXTERNAL,
-// 	OPERATION
-// }guide_type;
-
-// typedef struct label
-// {
-// 	char* label_name;
-// 	int address;
-// 	guide_type type;
-// }label;
 
 extern op_code operation_list[SUM_OPERATIONS];
 

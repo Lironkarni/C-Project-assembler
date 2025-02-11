@@ -3,9 +3,11 @@
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
 #include "../headers/process_input.h"
+#include "../headers/memory_struct.h"
 
-static int IC = 100;
-static int DC = 0;
+
+code_word code_image[MEM_SIZE];
+data_word data_image[MEM_SIZE];
 
 char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 
@@ -79,7 +81,7 @@ int process_line(char *file)
 void process_word(Line *line, char *first_word)
 {
     op_code curr_op;
-    int word_len, is_label, num_args, instruction_index;
+    int word_len, num_args, instruction_index;
     char *line_ptr, *second_word, *string_value;
     int *numbers = NULL;
     int is_label = 0;
@@ -89,8 +91,9 @@ void process_word(Line *line, char *first_word)
 
     if (first_word[word_len - 1] == COLON){
         is_label = 1;
-        if(!is_valid_label(first_word, line)){
-            //ERROR invalid label - return
+        if(is_valid_label(first_word, line)){
+            printf("found error in label %s\n", line->data);
+            FOUND_ERROR_IN_FIRST_PASS=1;
         }
         first_word[word_len - 1] = '\0';
     }
@@ -105,14 +108,15 @@ void process_word(Line *line, char *first_word)
             {
             case 0: //data
                 if (is_label) {
-                    add_symbol(line, first_word, DC, (guide_type)instruction_index);
+                    add_symbol(line, first_word, (guide_type)instruction_index);
                 }
                 get_data(line, instruction_index, &numbers);
+                add_data(data_image,numbers,line);
                 break;
             case 1: //string
                 string_value = get_word(NULL);
                 if (is_label) {
-                    add_symbol(line, first_word, DC, (guide_type)instruction_index);
+                    add_symbol(line, first_word, (guide_type)instruction_index);
                 }
                 if (if_valid_string(string_value, line))
                 {
@@ -122,7 +126,7 @@ void process_word(Line *line, char *first_word)
             case 2://entry
             case 3://extern
                 /* code */
-                add_symbol(line, second_word, DC, (guide_type)instruction_index);
+                add_symbol(line, second_word, (guide_type)instruction_index);
                 // need here to allocate memory to the data and update DC
                 break;
             }
@@ -135,7 +139,7 @@ void process_word(Line *line, char *first_word)
     if (strcmp(curr_op.operation_name, "0") != 0)
     {
         if (is_label) {
-            add_symbol(line, first_word, IC, (guide_type)instruction_index);
+            add_symbol(line, first_word, (guide_type)instruction_index);
         }    
 
         /*find which case is this by number of arguments*/
@@ -179,9 +183,9 @@ int which_instruction(char *word)
     return -1;
 }
 
-void add_symbol(Line *line, char *name, int address, guide_type type)
+void add_symbol(Line *line, char *name, guide_type type)
 {
-    printf("%s %d %d\n", name, address, type);
+    // printf("label name- %s | address- %d | type- %d\n", name, DC, type);
     if (find_symbol(name) != NULL)
     {
         Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
@@ -191,7 +195,7 @@ void add_symbol(Line *line, char *name, int address, guide_type type)
             return;
         }
         strcpy(new_symbol->name, name);
-        new_symbol->address = address;
+        new_symbol->address = DC;
         new_symbol->type = type;
         new_symbol->next = symbol_table_head;
         symbol_table_head = new_symbol;

@@ -84,30 +84,14 @@ op_code check_if_instruction(char* word)
 	return not_found;
 }
 
-
-/*this function gets the command and removes all spaces from the beginning of the command*/
-void remove_spaces(char* line)
-{
-	char* start = line;
-	while (*start && (isspace((unsigned char)(*start)) || *start == '\t')) {
-		start++;
-	}
-	/*move the rest of the string to the beginning*/
-	memmove(line, start, strlen(start) + 1);
-}
-
-
 int is_valid_label(char* label, Line *line)
 {
-	
-	//V-check its starts with alphbetic char
-	//V-check all chars are alphabetic or digits
-	//V-check if length is lower than 32 (MAX_LABEL_LENGTH)
-	//check if label name is saved assembly name
-	//check if label as been defind yet
-	//V-check if this is not a name of a macro
-
-	
+	/*check its starts with alphbetic char
+	check all chars are alphabetic or digits
+	check if length is lower than 32 (MAX_LABEL_LENGTH)
+	check if label name is saved assembly name
+	check if label as been defind yet
+	check if this is not a name of a macro*/
 	int i = 0, len;
 	op_code op;
 	len = strlen(label);
