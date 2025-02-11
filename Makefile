@@ -28,4 +28,5 @@ source/%.o: source/%.c
 
 # כלל לניקוי קבצים
 clean:
-	rm -f $(OBJ) $(TARGET)
+	del /F /Q source\*.o assembler 2>nul || exit 0
+

@@ -15,14 +15,18 @@ error errors[]={
     {ERROR_CODE_10, "label name is invalid, label name must start with alphabetic char"},
     {ERROR_CODE_11, "label name is invalid, more than 31 chars"},
     {ERROR_CODE_12, "label name is invalid, label should contain alphabetic and digits only"},
-    {ERROR_CODE_17, "label name is invalid, label name cant be equals to macro name"},
     {ERROR_CODE_13, "MACRO NAME IS INVALID (CANNOT BE AN DIRECTIVE NAME)."},
     {ERROR_CODE_14, "MACRO NAME IS INVALID (CANNOT BE AN INSTRUCTION NAME)."},
     {ERROR_CODE_15, "EXTRA CHARACTERS FOUND IN MACRO OPEN LINE."},
-    {ERROR_CODE_16, "EXTRA CHARACTERS FOUND IN MACRO CLOSE LINE."}
-
-    
-
+    {ERROR_CODE_16, "EXTRA CHARACTERS FOUND IN MACRO CLOSE LINE."},
+    {ERROR_CODE_17, "label name is invalid, label name cant be equals to macro name"},
+    {ERROR_CODE_18, "LABEL NAME IS ALREADY EXISTS"},
+    {ERROR_CODE_19, ""},
+    {ERROR_CODE_20, "STRING INSTRUCTION IS NOT IN QUOTES"},
+    {ERROR_CODE_21, "EXTRANEOUS TEXT AFTER END OF COMMAND"},
+    {ERROR_CODE_22, "EXPECTED NUMBER IN DATA INTRUCTION"},
+    {ERROR_CODE_23, "MISSING COMMA BETWEEN NUMBERS DATA INTRUCTION"},
+    {ERROR_CODE_24, "DATA INTRUCTION CANNOT END WITH COMMA"}
 };
 
 int FOUND_ERROR_IN_PRE_ASSEMBLER = 0;

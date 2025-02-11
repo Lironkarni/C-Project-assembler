@@ -1,3 +1,5 @@
+#ifndef GLOBALS_H
+#define GLOBALS_H
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -14,10 +16,13 @@
 /*minimum parameters the program needs to start*/
 #define MIN_PARAM 2
 
-
-
-int IC = 100; 
-int DC = 0; 
+/*initial capacity for size of array of numbers (.data)*/
+#define INIT_CAPACITY 10
 
 #define COMMENT ';'
 #define COLON ':'
+#define QUOTE '"'
+#define COMMA ','
+#define DECIMAL 10
+
+#endif

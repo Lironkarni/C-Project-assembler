@@ -1,3 +1,5 @@
+#ifndef PROCESS_INPUT_H
+#define PROCESS_INPUT_H
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -31,24 +33,26 @@ typedef struct op_code
 
 }op_code;
 
-typedef enum guide_type
-{
-	DATA,
-	STRING,
-	ENTRY,
-	EXTERNAL,
-	OPERATION
-}guide_type;
+// typedef enum guide_type
+// {
+// 	DATA,
+// 	STRING,
+// 	ENTRY,
+// 	EXTERNAL,
+// 	OPERATION
+// }guide_type;
 
-typedef struct label
-{
-	char* label_name;
-	int address;
-	guide_type type;
-}label;
+// typedef struct label
+// {
+// 	char* label_name;
+// 	int address;
+// 	guide_type type;
+// }label;
 
 extern op_code operation_list[SUM_OPERATIONS];
 
 op_code check_if_instruction(char* first_word);
 char* get_word(char* line);
 int is_valid_label(char* label, Line *line);
+
+#endif // PROCESS_INPUT_H

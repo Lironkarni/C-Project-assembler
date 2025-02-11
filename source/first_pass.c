@@ -4,14 +4,17 @@
 #include "../headers/first_pass.h"
 #include "../headers/process_input.h"
 
+static int IC = 100;
+static int DC = 0;
 
+char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
+
+Symbol *symbol_table_head = NULL;
 
 /*start the first pass*/
 int first_pass(char *file)
 {
-    Symbol *symbol_table_head = NULL; 
-
-    int IC = 100, DC = 0;
+    Symbol *symbol_table_head = NULL;
 
     if (process_line(file) != 0)
     {
@@ -41,7 +44,7 @@ int process_line(char *file)
     {
         while (fgets(temp_line, sizeof(temp_line), input_file))
         {
-            printf("%s",temp_line);
+            printf("%s", temp_line);
             line_number++;
             line_len = strlen(temp_line);        /*get line length*/
             if (temp_line[line_len - 1] == '\n') /*put '\0' at the end of each line*/
@@ -57,61 +60,71 @@ int process_line(char *file)
                 }
 
             /*make line*/
-            line = create_line(temp_line,file,line_number);
-            if(line==NULL){
+            line = create_line(temp_line, file, line_number);
+            if (line == NULL)
+            {
                 /*TODO-need to free all memery*/
                 exit(1);
             }
 
             /*get the fisrt word and check if this is guiding or instructive sentence*/
-            first_word=get_word(line->data);
+            first_word = get_word(line->data);
             process_word(line, first_word);
         }
     }
     fclose(input_file);
     return 0;
-    
 }
-
 
 void process_word(Line *line, char *first_word)
 {
     op_code curr_op;
-    int word_len, is_label, num_args;
-    char *line_ptr, *second_word;
+    int word_len, is_label, num_args, instruction_index;
+    char *line_ptr, *second_word, *string_value;
+    int *numbers = NULL;
 
-    printf("first word is %s", first_word);
+    printf("first word is %s\n", first_word);
     /*check if its instructive sentence*/
     curr_op = check_if_instruction(first_word);
     if (strcmp(curr_op.operation_name, "0") == 0)
     {
-        printf("not instruction, or giuding or label\n");
+        printf("not operation, its or giuding or label\n");
         /*if its label, need to check if its valid label's name*/
         word_len = strlen(first_word);
-        if (first_word[word_len - 1] == COLON){   /*if its label*/
+        if (first_word[word_len - 1] == COLON)
+        {                                                /*if its label*/
             is_label = is_valid_label(first_word, line); /* if its valid label- is_label=0*/
 
-            second_word = line->data + word_len + 1;
-            printf("%s", second_word);
-            if(is_data(second_word)){
-                add_symbol(second_word, IC, 1, 0, 0, 0);
+            second_word = get_word(NULL);
+            printf("second word is: %s\n", second_word);
+            instruction_index = which_instruction(second_word);
+            switch (instruction_index)
+            {
+            case 0:
+                get_data(line, instruction_index, &numbers);
+                break;
+            case 1:
+                string_value = get_word(NULL);
+                if (if_valid_string(string_value, line))
+                {
+                    FOUND_ERROR_IN_FIRST_PASS = 1;
+                }
+                break;
+            case 2:
+            case 3:
+                /* code */
+                add_symbol(line, second_word, DC, (guide_type)instruction_index);
+                // need here to allocate memory to the data and update DC
+                break;
+            case -1:
+                printf("first word- label, second word- NOT instruction, maybe a operation\n");
+                break;
+            default:
+                break;
             }
-
-            if(is_entry_extern(second_word)){
-                add_symbol(second_word, IC, 0, 0, 1, 1);
-            }
-
-            if (is_op_code(second_word)){
-                add_symbol(second_word, IC, 0, 1, 0, 0);
-
-            }
-
-
-            
-            
         }
     }
-    else /*its instruction*/
+    else /*its operation*/
     {
         /*need to check how many arguments*/
         line_ptr = line->data; // Create a pointer to the start of the line
@@ -147,29 +160,132 @@ void process_word(Line *line, char *first_word)
     }
 }
 
-
-void add_symbol(char *name, int address, int isData, int isCode, int isExtern, int isEntry) {
-    Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
-    if (!new_symbol) {
-        printf("Memory allocation failed\n");
-        return;
+int which_instruction(char *word)
+{
+    int i;
+    for (i = 0; i < INSTRUCTION_COUNT; i++)
+    {
+        if (strcmp(word, instruction_list[i]) == 0)
+            return i;
     }
-    strcpy(new_symbol->name, name);
-    new_symbol->address = address;
-    new_symbol->isData = isData;
-    new_symbol->isCode = isCode;
-    new_symbol->isExtern = isExtern;
-    new_symbol->isEntry = isEntry;
-    new_symbol->next = symbol_table_head; 
-    symbol_table_head = new_symbol;
+    return -1;
 }
 
-Symbol *find_symbol(char *name) {
+void add_symbol(Line *line, char *name, int address, guide_type type)
+{
+    printf("%s %d %d\n", name, address, type);
+    if (find_symbol(name) != NULL)
+    {
+        Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
+        if (!new_symbol)
+        {
+            print_system_error(ERROR_CODE_3);
+            return;
+        }
+        strcpy(new_symbol->name, name);
+        new_symbol->address = address;
+        new_symbol->type = type;
+        new_symbol->next = symbol_table_head;
+        symbol_table_head = new_symbol;
+    }
+    else
+    {
+        print_syntax_error(ERROR_CODE_18, line->file_name, line->line_number);
+        return;
+    }
+}
+
+Symbol *find_symbol(char *name)
+{
     Symbol *current = symbol_table_head;
-    while (current) {
+    while (current)
+    {
         if (strcmp(current->name, name) == 0)
             return current;
         current = current->next;
     }
-    return NULL; 
+    return NULL;
+}
+
+int if_valid_string(char *word, Line *line)
+{
+    int len;
+    len = strlen(word);
+    if (word[0] != QUOTE || word[len - 1] != QUOTE)
+    {
+        print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
+        return 1;
+    }
+    if (get_word(NULL) != NULL)
+    {
+        print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+        return 1;
+    }
+    // TODO- more possible errors  ??
+    return 0;
+}
+
+/*this function get the data if its ".data", and check if its valid or there are errors*/
+int get_data(Line *line, int inst_index, int **numbers)
+{
+    int expect_number = 1; // 0- expect number, 1- expect comma
+    int capacity, count = 0;
+    char *data_ptr = strstr(line->data, instruction_list[inst_index]);
+    data_ptr += strlen(instruction_list[inst_index]);
+    while (*data_ptr == ' ')
+        data_ptr++;
+
+    capacity = INIT_CAPACITY;
+    *numbers = (int *)malloc(capacity * sizeof(int));
+    if (*numbers == NULL)
+    {
+        print_system_error(ERROR_CODE_3);
+        exit(1);
+    }
+    while (*data_ptr != '\0')
+    {
+        if (expect_number)
+        {
+            if (!isdigit(*data_ptr))
+            {
+                print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
+            if (count >= capacity)
+            {
+                capacity *= 2;
+                *numbers = (int *)realloc(*numbers, capacity * sizeof(int));
+                if (*numbers == NULL)
+                {
+                    print_system_error(ERROR_CODE_3);
+                    exit(1);
+                }
+            }
+            (*numbers)[count++] = strtol(data_ptr, &data_ptr, DECIMAL);
+            expect_number = 0; // expecting now a comma
+        }
+
+        else
+        {
+            if (*data_ptr != COMMA)
+            {
+                print_syntax_error(ERROR_CODE_23, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
+            expect_number = 1;
+            data_ptr++;
+        }
+        while (*data_ptr == ' ')
+            data_ptr++;
+    }
+    // check if line ended with comma
+    if (expect_number)
+    {
+        print_syntax_error(ERROR_CODE_24, line->file_name, line->line_number);
+        free(*numbers);
+        return 1;
+    }
+    return 0;
 }
