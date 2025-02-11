@@ -227,12 +227,12 @@ char *load_file(char *filename) {
     }
 
 // פונקציה שבודקת את מספר השורות בקובץ .am ויוצרת קובץ .temp עם מספר השורות
-void check_the_file(const char *filename_ad)
+void check_the_file(const char *filename_am)
 {
-    FILE *file = fopen(filename_ad, "r");
+    FILE *file = fopen(filename_am, "r");
     if (!file)
     {
-        printf("Error: Unable to open %s for reading.\n", filename_ad);
+        printf("Error: Unable to open %s for reading.\n", filename_am);
         return;
     }
 
@@ -244,25 +244,19 @@ void check_the_file(const char *filename_ad)
     }
     fclose(file);
 
-    char *filename_ah = (char *)malloc(strlen(filename_ad) + 3);
-    if (!filename_ah) {
-        printf("Memory allocation failed.\n");
-        return;
-    }
+    char filename_ah[256];
 
-    sprintf(filename_ah, "%s.ah", filename_ad);
+    snprintf(filename_ah, sizeof(filename_ah), "%s.ah", filename_am);
     
     FILE *file_ah = fopen(filename_ah, "w");
     if (!file_ah)
     {
         printf("Error: Unable to open %s for writing.\n", filename_ah);
-        free(filename_ah);
         return;
     }
 
     fprintf(file_ah, "Number of lines: %d\n", line_count);
     fclose(file_ah);
-    free(filename_ah);
     
 }
 

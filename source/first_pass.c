@@ -82,82 +82,90 @@ void process_word(Line *line, char *first_word)
     int word_len, is_label, num_args, instruction_index;
     char *line_ptr, *second_word, *string_value;
     int *numbers = NULL;
+    int is_label = 0;
 
     printf("first word is %s\n", first_word);
-    /*check if its instructive sentence*/
-    curr_op = check_if_instruction(first_word);
-    if (strcmp(curr_op.operation_name, "0") == 0)
-    {
-        printf("not operation, its or giuding or label\n");
-        /*if its label, need to check if its valid label's name*/
-        word_len = strlen(first_word);
-        if (first_word[word_len - 1] == COLON)
-        {                                                /*if its label*/
-            is_label = is_valid_label(first_word, line); /* if its valid label- is_label=0*/
+    word_len = strlen(first_word);
 
-            second_word = get_word(NULL);
-            printf("second word is: %s\n", second_word);
-            instruction_index = which_instruction(second_word);
-            switch (instruction_index)
+    if (first_word[word_len - 1] == COLON){
+        is_label = 1;
+        if(!is_valid_label(first_word, line)){
+            //ERROR invalid label - return
+        }
+        first_word[word_len - 1] = '\0';
+    }
+
+    second_word = is_label ? get_word(NULL) : first_word;
+    printf("second word is: %s\n", second_word);
+    instruction_index = which_instruction(second_word);
+
+    if (instruction_index != -1) // אם זו הנחיה
+    {
+        switch (instruction_index)
             {
-            case 0:
+            case 0: //data
+                if (is_label) {
+                    add_symbol(line, first_word, DC, (guide_type)instruction_index);
+                }
                 get_data(line, instruction_index, &numbers);
                 break;
-            case 1:
+            case 1: //string
                 string_value = get_word(NULL);
+                if (is_label) {
+                    add_symbol(line, first_word, DC, (guide_type)instruction_index);
+                }
                 if (if_valid_string(string_value, line))
                 {
                     FOUND_ERROR_IN_FIRST_PASS = 1;
                 }
                 break;
-            case 2:
-            case 3:
+            case 2://entry
+            case 3://extern
                 /* code */
                 add_symbol(line, second_word, DC, (guide_type)instruction_index);
                 // need here to allocate memory to the data and update DC
                 break;
-            case -1:
-                printf("first word- label, second word- NOT instruction, maybe a operation\n");
-                break;
-            default:
-                break;
             }
-        }
+        return;
     }
-    else /*its operation*/
-    {
-        /*need to check how many arguments*/
-        line_ptr = line->data; // Create a pointer to the start of the line
-        // memcpy(line_ptr, line + strlen(curr_op.operation_name), strlen(line));
-        // remove_spaces(line_ptr);
-        /*TODO*/
-        /*need to check for comma- if there is- error*/
 
-        /*fond which case is this by number of arguments*/
+
+    /*check if its instructive sentence*/
+    curr_op = check_if_instruction(second_word);
+    if (strcmp(curr_op.operation_name, "0") != 0)
+    {
+        if (is_label) {
+            add_symbol(line, first_word, IC, (guide_type)instruction_index);
+        }    
+
+        /*find which case is this by number of arguments*/
         num_args = curr_op.address_method.num_args;
+
         switch (num_args)
         {
-        case 0:
-            printf("%s\n", curr_op.operation_name);
-            printf("0 args\n");
-            break;
+            case 0:
+               printf("%s\n", curr_op.operation_name);
+               printf("0 args\n");
+               break;
 
-        case 1:
-            printf("%s\n", curr_op.operation_name);
-            printf("1 args\n");
-            break;
+            case 1:
+                printf("%s\n", curr_op.operation_name);
+                printf("1 args\n");
+                break;
 
-        case 2:
-            printf("%s\n", curr_op.operation_name);
-            printf("2 args\n");
-            break;
+            case 2:
+                printf("%s\n", curr_op.operation_name);
+                printf("2 args\n");
+                break;
 
-        default:
-            printf("%s\n", curr_op.operation_name);
-            printf("some error\n");
-            break;
+            default:
+                printf("%s\n", curr_op.operation_name);
+                printf("some error\n");
+                break;
         }
+                
     }
+
 }
 
 int which_instruction(char *word)

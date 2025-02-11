@@ -29,10 +29,10 @@ int main(int argc, char *argv[]) {
             }
 
             // בודקים את הקובץ .am ומייצרים קובץ .temp
-            char filename_ad[256];
-            snprintf(filename_ad, sizeof(filename_ad), "test-files/%s.am", argv[i]);
-            check_the_file(filename_ad);
-            first_pass(filename_ad);
+            char filename_am[256];
+            snprintf(filename_am, sizeof(filename_am), "test-files/%s.am", argv[i]);
+            check_the_file(filename_am);
+            first_pass(filename_am);
             if (FOUND_ERROR_IN_FIRST_PASS){
                 FOUND_ERROR_IN_FIRST_PASS = 0;
                 continue;
