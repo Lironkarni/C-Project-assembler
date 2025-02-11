@@ -93,12 +93,12 @@ void process_word(Line *line, char *first_word)
 
             second_word = line->data + word_len + 1;
             printf("%s", second_word);
-            if(is_string_data(second_word)){
+            if(is_data(second_word)){
                 add_symbol(second_word, IC, 1, 0, 0, 0);
             }
 
             if(is_entry_extern(second_word)){
-                add_symbol(second_word, IC, 0, 1, 0, 0);
+                add_symbol(second_word, IC, 0, 0, 1, 1);
             }
 
             if (is_op_code(second_word)){
