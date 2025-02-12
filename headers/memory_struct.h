@@ -1,6 +1,12 @@
 #ifndef MEMORY_STRUCT_H
 #define MEMORY_STRUCT_H
 
+
+#include "../headers/utils.h"
+#include "../headers/globals.h"
+#include "../headers/error.h"
+
+
 #include <stdint.h>
 
 

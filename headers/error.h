@@ -1,3 +1,6 @@
+#ifndef ERROR_H
+#define ERROR_H
+
 typedef struct error
 {
 	int err_code;
@@ -43,3 +46,5 @@ extern int FOUND_ERROR_IN_FIRST_PASS;
 void print_system_error(int error_code);
 
 void print_syntax_error(int error_code, const char* file_name, int line_number);
+
+#endif
