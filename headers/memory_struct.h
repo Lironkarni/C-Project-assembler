@@ -29,5 +29,6 @@ extern int DC;
 extern int IC;
 
 void add_data(data_word *data_image, int *numbers, Line *line);
+void add_string_data(data_word *data_image, char *char_array, Line *line);
 
 #endif

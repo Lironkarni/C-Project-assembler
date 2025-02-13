@@ -30,5 +30,8 @@ void add_symbol(Line *line, char *word,guide_type type);
 Symbol *find_symbol(char *name);
 int if_valid_string(char *word, Line *line);
 int get_data(Line *line, int inst_index, int **numbers);
+int get_string_data( Line *line, int inst_index, char **string_value);
+
+void test(int dc);
 
 #endif

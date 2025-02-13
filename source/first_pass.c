@@ -16,7 +16,6 @@ Symbol *symbol_table_head = NULL;
 /*start the first pass*/
 int first_pass(char *file)
 {
-    Symbol *symbol_table_head = NULL;
 
     if (process_line(file) != 0)
     {
@@ -51,7 +50,7 @@ int process_line(char *file)
             line_len = strlen(temp_line);        /*get line length*/
             if (temp_line[line_len - 1] == '\n') /*put '\0' at the end of each line*/
                 temp_line[line_len - 1] = '\0';
-
+            
             if (line_len > MAX_LINE_LEN)
                 if (temp_line[MAX_LINE_LEN] != '\0' && temp_line[MAX_LINE_LEN] != '\n')
                 {
@@ -60,19 +59,21 @@ int process_line(char *file)
                         ;     /*clear the rest of the line*/
                     continue; /*don't check this row, move to the next one*/
                 }
-
+            
             /*make line*/
             line = create_line(temp_line, file, line_number);
+            
             if (line == NULL)
             {
                 /*TODO-need to free all memery*/
                 exit(1);
             }
-
+            
             /*get the fisrt word and check if this is guiding or instructive sentence*/
             first_word = get_word(line->data);
             process_word(line, first_word);
         }
+        test(DC);
     }
     fclose(input_file);
     return 0;
@@ -82,7 +83,7 @@ void process_word(Line *line, char *first_word)
 {
     op_code curr_op;
     int word_len, num_args, instruction_index;
-    char *line_ptr, *second_word, *string_value;
+    char  *second_word, *string_value;
     int *numbers = NULL;
     int is_label = 0;
 
@@ -112,22 +113,31 @@ void process_word(Line *line, char *first_word)
                 }
                 get_data(line, instruction_index, &numbers);
                 add_data(data_image,numbers,line);
+                
                 break;
             case 1: //string
-                string_value = get_word(NULL);
+                
                 if (is_label) {
                     add_symbol(line, first_word, (guide_type)instruction_index);
                 }
-                if (if_valid_string(string_value, line))
+                if (!get_string_data(line,instruction_index,&string_value))
                 {
                     FOUND_ERROR_IN_FIRST_PASS = 1;
+                }else{
+                    add_string_data(data_image, string_value, line);
                 }
                 break;
-            case 2://entry
+            case 2: //entry
+                if (is_label) {
+                    printf("WARNING: label is ignored in entry line\n");
+                }
+                 break; //handle in second pass
             case 3://extern
-                /* code */
+                if (is_label) {
+                    printf("WARNING: label is ignored in extern line\n");
+                }
+                second_word = get_word(NULL);
                 add_symbol(line, second_word, (guide_type)instruction_index);
-                // need here to allocate memory to the data and update DC
                 break;
             }
         return;
@@ -185,8 +195,7 @@ int which_instruction(char *word)
 
 void add_symbol(Line *line, char *name, guide_type type)
 {
-    // printf("label name- %s | address- %d | type- %d\n", name, DC, type);
-    if (find_symbol(name) != NULL)
+    if (find_symbol(name) == NULL)
     {
         Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
         if (!new_symbol)
@@ -195,10 +204,14 @@ void add_symbol(Line *line, char *name, guide_type type)
             return;
         }
         strcpy(new_symbol->name, name);
-        new_symbol->address = DC;
         new_symbol->type = type;
         new_symbol->next = symbol_table_head;
         symbol_table_head = new_symbol;
+        if(type == 3){
+            new_symbol->address = -100;
+        }else{
+            new_symbol->address = DC;
+        }
     }
     else
     {
@@ -258,7 +271,14 @@ int get_data(Line *line, int inst_index, int **numbers)
     {
         if (expect_number)
         {
-            if (!isdigit(*data_ptr))
+            if (*data_ptr == '-' || *data_ptr == '+') {
+                if (!isdigit(*(data_ptr + 1))) { // אם אחרי '-' או '+' לא בא מספר - שגיאה
+                    print_syntax_error(22, line->file_name, line->line_number);
+                    free(*numbers);
+                    return 1;
+                }
+            }
+            else if (!isdigit(*data_ptr))
             {
                 print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
                 free(*numbers);
@@ -299,5 +319,94 @@ int get_data(Line *line, int inst_index, int **numbers)
         free(*numbers);
         return 1;
     }
+    (*numbers)[count] = '\0';
     return 0;
+}
+
+int get_string_data(Line *line, int inst_index, char **characters) {
+    int capacity = INIT_CAPACITY, length = 0;
+    char *char_array;
+    char *data_ptr = strstr(line->data, instruction_list[inst_index]);
+
+    if (!data_ptr) {
+        print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+        return 0;
+    }
+
+    data_ptr += strlen(instruction_list[inst_index]);
+
+    while (*data_ptr == ' ') // דילוג על רווחים
+        data_ptr++;
+
+    if (*data_ptr != '"') { // אם המחרוזת לא מתחילה בגרשיים - שגיאה
+        print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+        return 0;
+    }
+
+    data_ptr++; // מעבר אחרי המרכאה הפותחת
+
+    char_array = (char *)malloc(capacity * sizeof(char));
+    if (!char_array) {
+        print_system_error(ERROR_CODE_3);
+        exit(1);
+    }
+
+    // קריאת המחרוזת עד המרכאה הסוגרת
+    while (*data_ptr && *data_ptr != '"') {
+        if (length >= capacity) { 
+            capacity *= 2;
+            char_array = (char *)realloc(char_array, capacity * sizeof(char));
+            if (!char_array) {
+                print_system_error(ERROR_CODE_3);
+                exit(1);
+            }
+        }
+        char_array[length++] = *data_ptr++; 
+    }
+
+    if (*data_ptr != '"') { // אם אין מרכאה סוגרת - שגיאה
+        print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+        free(char_array);
+        return 0;
+    }
+
+    char_array[length] = '\0'; // סימון סוף מחרוזת
+    *characters = char_array; 
+
+    data_ptr++; // מעבר אחרי המרכאה הסוגרת
+
+    // דילוג על רווחים אחרי המחרוזת
+    while (*data_ptr == ' ')
+        data_ptr++;
+
+    // אם יש עוד תווים אחרי המחרוזת - שגיאה
+    if (*data_ptr != '\0') {
+        print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+        free(char_array);
+        return 0;
+    }
+
+    return 1; // הצלחה
+}
+
+void test(int dc) {
+    printf("%d\n" , dc);
+        // הדפסת טבלת הסמלים
+    Symbol *current = symbol_table_head;
+    printf("Symbol Table:\n");
+    printf("-----------------------------\n");
+    while (current) {
+        printf("Name: %s| Address: %d| Type: %d\n", current->name, current->address, current->type);
+        current = current->next;
+    }
+    printf("-----------------------------\n\n");
+
+    // הדפסת תמונת הנתונים
+    printf("Data Image:\n");
+    printf("-----------------------------\n");
+    for (int i = 0; i < dc; i++) {
+        printf("Address %d: %06X\n", i, data_image[i].data);
+    }
+    printf("-----------------------------\n");
+
 }
