@@ -5,6 +5,7 @@
 #include "../headers/utils.h"
 #include "../headers/error.h"
 #include "../headers/process_input.h"
+#include "../headers/globals.h"
 
 Macro *head = NULL;  // מצביע לראש הרשימה
 
@@ -370,4 +371,19 @@ Line *create_line(char* temp_line,char* file,int line_number){
     new_line->line_number=line_number;
     
     return new_line;
+}
+
+int extraneous_text(char *command)
+{
+int i;
+    for(i=0;*command!=NULL_CHAR;i++)
+    {
+        if(command[i]!=NULL_CHAR && command[i]!=SPACE){
+            return 1;
+        }
+    }
+    if(i==0){
+        return 0;
+    }
+    return 0;
 }

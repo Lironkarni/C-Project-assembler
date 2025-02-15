@@ -41,5 +41,6 @@ int is_valid_macro_end(char *line, const char *filename, int line_count);
 void delete_am_file(const char *filename);
 
 Line *create_line(char* temp_line,char* file,int line_number); //create new line
+int extraneous_text(char *command);
 
 #endif // FILE_COPY_H

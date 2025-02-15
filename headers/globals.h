@@ -23,6 +23,9 @@
 #define COLON ':'
 #define QUOTE '"'
 #define COMMA ','
+#define SPACE ' '
+#define NULL_CHAR '\0'
 #define DECIMAL 10
+#define EXTERN_INDEX 3
 
 #endif
