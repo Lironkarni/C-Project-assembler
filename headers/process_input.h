@@ -39,6 +39,5 @@ extern op_code operation_list[SUM_OPERATIONS];
 int check_if_operation(char* first_word);
 char* get_word(char* line);
 int is_valid_label(char* label, Line *line);
-int analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index);
-
+void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index);
 #endif // PROCESS_INPUT_H

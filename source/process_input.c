@@ -2,6 +2,7 @@
 #include "../headers/error.h"
 #include "../headers/globals.h"
 #include "../headers/utils.h"
+#include "../headers/first_pass.h"
 
 op_code operation_list[SUM_OPERATIONS] =
 	{
@@ -22,7 +23,7 @@ op_code operation_list[SUM_OPERATIONS] =
 		{"rts", 14, 0, {0, NONE, NONE}},
 		{"stop", 15, 0, {0, NONE, NONE}}};
 
-int analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index)
+void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index)
 {
 	int num_args, is_code = 0, op_index;
 	char *first_operand, *ptr;
@@ -43,7 +44,7 @@ int analyse_operation(Line *line, char *second_word, int is_label, char *first_w
 
 	num_args = operation_list[op_index].address_method.num_args; // מספר האופרנדים של הפקודה
 
-	*ptr = strstr(line->data, operation_list[op_index].operation_name);
+	ptr = strstr(line->data, operation_list[op_index].operation_name);
 	ptr += strlen(operation_list[op_index].operation_name);
 	while (*ptr == SPACE) // דילוג על רווחים
 		ptr++;
@@ -163,8 +164,10 @@ int check_if_operation(char *word)
 	// op_code not_found = {"0", 0, 0};
 	for (i = 0; i < SUM_OPERATIONS; i++)
 	{
-		if (strcmp(word, operation_list[i].operation_name) == 0)
-			i;
+		if (strcmp(word, operation_list[i].operation_name) == 0){
+			return i;
+
+		}
 	}
 	return -1;
 }

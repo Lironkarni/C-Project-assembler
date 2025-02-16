@@ -26,7 +26,7 @@ int first_pass(char *file);
 int process_line(char* file);
 void process_word(Line* line, char* first_word);
 int which_instruction(char *word);
-void add_symbol(Line *line, char *word, int inst_index, int is_code);
+void add_symbol(Line *line, char *name, int instruction_index, int is_code);
 Symbol *find_symbol(char *name);
 int get_data(Line *line, int inst_index, int **numbers);
 int get_string_data( Line *line, int inst_index, char **string_value);
