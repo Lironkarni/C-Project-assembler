@@ -93,7 +93,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		// }
 
 		/*need to check if addressing method is legal*/
-		address_method=which_addressing_method(ptr, op_index, line);
+		address_method = which_addressing_method(ptr, op_index, line);
 		printf("%d\n", address_method);
 		break;
 
@@ -116,30 +116,44 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 }
 int which_addressing_method(char *ptr, int op_index, Line *line)
 {
-	char *temp_ptr=ptr;
+	char *temp_ptr = ptr;
 	if (*temp_ptr++ == NUMBER_SIGN) // if start with #
 	{
 		if (*temp_ptr == '-' || *temp_ptr == '+')
 		{
 			if (!isdigit(*(temp_ptr + 1)))
 			{ // אם אחרי '-' או '+' לא בא מספר - שגיאה
-				print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+				print_syntax_error(ERROR_CODE_31, line->file_name, line->line_number);
 				return -1;
 			}
 		}
-		while (*temp_ptr!=SPACE && *temp_ptr!=NULL_CHAR)
+		while (*temp_ptr != SPACE && *temp_ptr != NULL_CHAR)
 		{
-			if (!isdigit(*ptr))
+
+			if (!isdigit(*temp_ptr++))
 			{
 				print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
 				return -1;
 			}
-			temp_ptr++;
 		}
 		return IMMEDIATE;
 	}
+	else if (is_register(temp_ptr))// check if register
+	{ 
+		return DIRECT_REGISTER;
+	}
 }
-
+int is_register(char *ptr)
+{
+	for (int i = 0; i < NUM_OF_REG; i++)
+	{
+		if (strncmp(ptr, REGISTERS[i], TWO))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
 char *get_word(char *line)
 {
 	static char *current = NULL;

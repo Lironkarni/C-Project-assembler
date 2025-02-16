@@ -30,4 +30,5 @@
 #define EXTERN_INDEX 3
 #define MASK 0xFF
 #define ZERO 0
+#define TWO 2
 #endif
