@@ -72,7 +72,7 @@ int process_line(char *file)
             first_word = get_word(line->data);
             process_word(line, first_word);
         }
-        test(DC);
+        test(DC,IC);
     }
     fclose(input_file);
     return 0;
@@ -158,7 +158,7 @@ void process_word(Line *line, char *first_word)
 
     else // not instruction. its operation 
     {
-        analyse_operation(line,second_word, is_label, first_word, instruction_index); // ניתוח הקלט (מספר אופרנדים ושיטת מיעון וכו)
+        analyse_operation(line,second_word, is_label, first_word, instruction_index, code_image); // ניתוח הקלט (מספר אופרנדים ושיטת מיעון וכו)
     }
 }
 
@@ -370,7 +370,7 @@ int get_string_data(Line *line, int inst_index, char **characters)
     return 0; // הצלחה
 }
 
-void test(int dc)
+void test(int dc, int ic)
 {
     printf("%d\n", dc);
     // הדפסת טבלת הסמלים
@@ -392,4 +392,32 @@ void test(int dc)
         printf("Address %d: %06X\n", i, data_image[i].data);
     }
     printf("-----------------------------\n");
+
+    printf("Code Image\n");
+    printf("%d\n",ic);
+    // הדפסת תמונת הקוד
+    for (int i = 100; i < ic; i++)
+    {
+        // בניית 24 ביטים מהמבנה
+        uint32_t full_word = (code_image[i].op_code << 18) |
+                             (code_image[i].source_address << 16) |
+                             (code_image[i].source_reg << 13) |
+                             (code_image[i].target_address << 11) |
+                             (code_image[i].target_reg << 8) |
+                             (code_image[i].funct << 3) |
+                             (code_image[i].A_R_E);
+
+        printf("Address %d: ", i);
+        print_bits(full_word, 24); // הדפסת כל הביטים
+        printf(" (0x%06X)\n", full_word);
+    }
+    printf("-----------------------------\n");
+}
+
+void print_bits(uint32_t value, int bits)
+{
+    for (int i = bits - 1; i >= 0; i--)
+    {
+        printf("%d", (value >> i) & 1);
+    }
 }

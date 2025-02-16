@@ -31,6 +31,8 @@ Symbol *find_symbol(char *name);
 int get_data(Line *line, int inst_index, int **numbers);
 int get_string_data( Line *line, int inst_index, char **string_value);
 
-void test(int dc);
+void test(int dc, int ic);
+void print_bits(uint32_t value, int bits);
+
 
 #endif

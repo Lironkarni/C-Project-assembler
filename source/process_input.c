@@ -3,6 +3,7 @@
 #include "../headers/globals.h"
 #include "../headers/utils.h"
 #include "../headers/first_pass.h"
+#include "../headers/memory_struct.h"
 
 op_code operation_list[SUM_OPERATIONS] =
 	{
@@ -25,9 +26,9 @@ op_code operation_list[SUM_OPERATIONS] =
 
 char *REGISTERS[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
-void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index)
+void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image)
 {
-	int num_args, is_code = 0, op_index;
+	int num_args, is_code = 0, op_index, address_method;
 	char *first_operand, *ptr;
 	op_index = check_if_operation(second_word);
 	if (op_index != -1) // אם זו פקודה מוכרת של אסמבלי
@@ -60,7 +61,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		// TODO- what else?
+		add_to_code_image(code_image, line, num_args, op_index);
 		break;
 
 	case 1:
@@ -84,15 +85,17 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
-		{
-			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
-			FOUND_ERROR_IN_FIRST_PASS = 1;
-			return;
-		}
+		// if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
+		// {
+		// 	print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+		// 	FOUND_ERROR_IN_FIRST_PASS = 1;
+		// 	return;
+		// }
 
 		/*need to check if addressing method is legal*/
-			break;
+		address_method=which_addressing_method(ptr, op_index, line);
+		printf("%d\n", address_method);
+		break;
 
 	case 2:
 		if (*ptr == NULL_CHAR) // missing operand
@@ -111,16 +114,31 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		break;
 	}
 }
-// char* get_valid_address_method_name(valid_address_method method) {
-//	switch (method) {
-//	case METHOD_0_1_3: return "METHOD_0_1_3";
-//	case METHOD_1: return "METHOD_1";
-//	case METHOD_1_3: return "METHOD_1_3";
-//	case METHOD_1_2: return "METHOD_1_2";
-//	case NONE: return "NONE";
-//	default: return "UNKNOWN";
-//	}
-// }
+int which_addressing_method(char *ptr, int op_index, Line *line)
+{
+	char *temp_ptr=ptr;
+	if (*temp_ptr++ == NUMBER_SIGN) // if start with #
+	{
+		if (*temp_ptr == '-' || *temp_ptr == '+')
+		{
+			if (!isdigit(*(temp_ptr + 1)))
+			{ // אם אחרי '-' או '+' לא בא מספר - שגיאה
+				print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+				return -1;
+			}
+		}
+		while (*temp_ptr!=SPACE && *temp_ptr!=NULL_CHAR)
+		{
+			if (!isdigit(*ptr))
+			{
+				print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+				return -1;
+			}
+			temp_ptr++;
+		}
+		return IMMEDIATE;
+	}
+}
 
 char *get_word(char *line)
 {
@@ -172,9 +190,9 @@ int check_if_operation(char *word)
 	// op_code not_found = {"0", 0, 0};
 	for (i = 0; i < SUM_OPERATIONS; i++)
 	{
-		if (strcmp(word, operation_list[i].operation_name) == 0){
+		if (strcmp(word, operation_list[i].operation_name) == 0)
+		{
 			return i;
-
 		}
 	}
 	return -1;

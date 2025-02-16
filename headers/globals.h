@@ -24,8 +24,10 @@
 #define QUOTE '"'
 #define COMMA ','
 #define SPACE ' '
+#define NUMBER_SIGN '#'
 #define NULL_CHAR '\0'
 #define DECIMAL 10
 #define EXTERN_INDEX 3
-
+#define MASK 0xFF
+#define ZERO 0
 #endif

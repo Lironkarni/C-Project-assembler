@@ -9,6 +9,11 @@
 
 #include <stdint.h>
 
+typedef struct{
+int A;
+int R;
+int E;
+}A_R_E;
 
 typedef struct {
     uint8_t op_code : 6;   // 4 ביטים לצבע
@@ -30,5 +35,7 @@ extern int IC;
 
 void add_data(data_word *data_image, int *numbers, Line *line);
 void add_string_data(data_word *data_image, char *char_array, Line *line);
+void add_to_code_image(code_word *code_image,Line *line, int num_args, int op_index);
+
 
 #endif
