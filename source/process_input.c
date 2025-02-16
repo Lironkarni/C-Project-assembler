@@ -23,6 +23,8 @@ op_code operation_list[SUM_OPERATIONS] =
 		{"rts", 14, 0, {0, NONE, NONE}},
 		{"stop", 15, 0, {0, NONE, NONE}}};
 
+char *REGISTERS[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+
 void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index)
 {
 	int num_args, is_code = 0, op_index;
@@ -82,7 +84,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		if (extraneous_text(ptr)) // אקסטרה תווים אחקי האופרנד היחיד
+		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
 		{
 			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
@@ -93,6 +95,12 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			break;
 
 	case 2:
+		if (*ptr == NULL_CHAR) // missing operand
+		{
+			print_syntax_error(ERROR_CODE_30, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
 
 		printf("2 args\n");
 		break;
