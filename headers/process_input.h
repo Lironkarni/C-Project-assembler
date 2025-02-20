@@ -49,5 +49,6 @@ int check_if_operation(char* first_word);
 char* get_word(char* line);
 int is_valid_label(char* label, Line *line);
 void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image);
-int which_addressing_method(char *ptr, int op_index, Line *line);
+int which_addressing_method(char **ptr, int op_index, Line *line);
+int is_register(char *ptr);
 #endif // PROCESS_INPUT_H
