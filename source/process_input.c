@@ -92,6 +92,8 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 
 		/*need to check if addressing method is legal*/
 		address_method_des = which_addressing_method(&ptr, op_index, line);
+		if(address_method_des==-1)
+		return;	
 	
 	
 		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
@@ -137,9 +139,14 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
+
+		if(is_legal_method(line, address_method_des, op_index, num_args)){
+			return;
+		}
 		//before adding to code_image need to make sure it label that defined
 		// if need to take care in first pass so here need to send to
 		//add_to_code_image();
+
 		
 		break;
 
@@ -200,6 +207,46 @@ int which_addressing_method(char **ptr, int op_index, Line *line)
 		return DIRECT;
 	}
 }
+
+int is_legal_method(Line *line, int method, int op_index, int num_args)
+{
+	if(num_args==1)// need to check only destination
+	{
+		switch (operation_list[op_index].address_method.address_method_dest)
+		{
+		case METHOD_0_1_3:
+			if(method==RELATIVE)
+			{
+				print_syntax_error(ERROR_CODE_34, line->file_name,line->line_number);
+				FOUND_ERROR_IN_FIRST_PASS=1;
+				return 1;
+			}
+			return 0; // METHOD IS LEGAL
+		
+		case METHOD_1_2:
+			if(method==DIRECT || method==DIRECT_REGISTER)
+			{
+				print_syntax_error(ERROR_CODE_34, line->file_name,line->line_number);
+				FOUND_ERROR_IN_FIRST_PASS=1;
+				return 1;
+			}
+			return 0;
+
+		case METHOD_1_3:
+			if(method==DIRECT || method==RELATIVE)
+			{
+				print_syntax_error(ERROR_CODE_34, line->file_name,line->line_number);
+				FOUND_ERROR_IN_FIRST_PASS=1;
+				return 1;
+			}
+			return 0;
+		
+		default:
+			return 0;
+		}
+	}
+}
+
 int is_register(char *ptr)
 {
 	for (int i = 0; i < NUM_OF_REG; i++)
