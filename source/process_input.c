@@ -28,10 +28,10 @@ char *REGISTERS[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image)
 {
-	int num_args, is_code = 0, op_index, address_method_src, address_method_des;
-	char *first_operand, *ptr;
-	if(is_label)
-	op_index = check_if_operation(second_word);
+	int num_args, is_code = 0, op_index, address_method_src, address_method_des, len, is_comma = 0;
+	char *first_operand,*second_operand, *ptr;
+	if (is_label)
+		op_index = check_if_operation(second_word);
 	else
 		op_index = check_if_operation(first_word);
 
@@ -90,22 +90,34 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			return;
 		}
 
+		first_operand=get_word(NULL);
+		len = strlen(first_operand);
+		if (first_operand[len-1] == COMMA)
+		{
+			print_syntax_error(ERROR_CODE_35, line->file_name,line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS=1;
+			return;
+		}
 		/*need to check if addressing method is legal*/
-		address_method_des = which_addressing_method(&ptr, op_index, line);
-		if(address_method_des==-1)
-		return;	
-	
-	
+		address_method_des = which_addressing_method(first_operand, op_index, line);
+		if (address_method_des == -1)
+			return; // there was error. no need to keep analysing this line
+
+		ptr+=len;
 		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
 		{
 			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-
-		//before adding to code_image need to make sure it label that defined
-		// if need to take care in first pass so here need to send to
-		//add_to_code_image();
+		// check if the method is legal
+		if (is_legal_method(line, address_method_des, op_index, num_args))
+		{
+			return;
+		}
+		// before adding to code_image need to make sure it label that defined
+		//  if need to take care in first pass so here need to send to
+		// add_to_code_image();
 		break;
 	case 2:
 		if (*ptr == NULL_CHAR) // missing operand
@@ -120,34 +132,55 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		address_method_src = which_addressing_method(&ptr, op_index, line);
+		first_operand = get_word(NULL);
+		len = strlen(first_operand);
+		if (first_operand[len-1] == COMMA)
+		{
+			is_comma = 1;
+			first_operand[len-1] = NULL_CHAR; // need to word w/o the comma
+		}
+		address_method_src = which_addressing_method(first_operand, op_index, line);
+		if (address_method_src == -1)
+		{
+			return;
+		}
+		ptr+=len; 
+
 		while (*ptr == SPACE) // דילוג על רווחים
-		ptr++;
-		if(*ptr != COMMA)// expected comma
+			ptr++;
+		if (*ptr != COMMA && !is_comma) // expected comma
 		{
 			print_syntax_error(ERROR_CODE_33, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
 		while (*ptr == SPACE) // דילוג על רווחים
-		ptr++;
-		address_method_des = which_addressing_method(&ptr, op_index, line);
-
+			ptr++;
+		second_operand=get_word(NULL);
+		len = strlen(second_operand);
+		if (second_operand[len-1] == COMMA)
+		{
+			print_syntax_error(ERROR_CODE_35, line->file_name,line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS=1;
+			return;
+		}
+		address_method_des = which_addressing_method(second_operand, op_index, line);
+		ptr+=len;
 		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
 		{
 			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-
-		if(is_legal_method(line, address_method_des, op_index, num_args)){
+		// check if the method is legal
+		if (is_legal_method(line, address_method_des, op_index - 1, num_args) || is_legal_method(line, address_method_src, op_index, num_args))
+		{
 			return;
 		}
-		//before adding to code_image need to make sure it label that defined
-		// if need to take care in first pass so here need to send to
-		//add_to_code_image();
+		// before adding to code_image need to make sure it label that defined
+		//  if need to take care in first pass so here need to send to
+		// add_to_code_image();
 
-		
 		break;
 
 	default:
@@ -156,24 +189,23 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		break;
 	}
 }
-int which_addressing_method(char **ptr, int op_index, Line *line)
+int which_addressing_method(char *ptr, int op_index, Line *line)
 {
-	char *temp_ptr = *ptr;
-	if (*temp_ptr == NUMBER_SIGN) // if start with #
+	if (*ptr == NUMBER_SIGN) // if start with #
 	{
 		ptr++;
-		if (*temp_ptr == '-' || *temp_ptr == '+')
+		if (*ptr == '-' || *ptr == '+')
 		{
-			if (!isdigit(*(temp_ptr + 1)))
+			if (!isdigit(*(ptr + 1)))
 			{ // אם אחרי '-' או '+' לא בא מספר - שגיאה
 				print_syntax_error(ERROR_CODE_31, line->file_name, line->line_number);
 				return -1;
 			}
 		}
-		while (*temp_ptr != SPACE && *temp_ptr != NULL_CHAR)
+		while (*ptr != SPACE && *ptr != NULL_CHAR)
 		{
 
-			if (!isdigit(*temp_ptr++))
+			if (!isdigit(*ptr++))
 			{
 				print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
 				return -1;
@@ -181,69 +213,95 @@ int which_addressing_method(char **ptr, int op_index, Line *line)
 		}
 		return IMMEDIATE;
 	}
-	else if (is_register(temp_ptr))// check if register
-	{ 
+	else if (is_register(ptr)) // check if register
+	{
 		return DIRECT_REGISTER;
 	}
 
-	else if(*temp_ptr==AMPERSAND) //&next
+	else if (*ptr == AMPERSAND) //&next
 	{
 		// next word must be label that defined or will be define later
-		//TODO- האם לטפל בזה בחלק זה או בסיבוב השני
+		// TODO- האם לטפל בזה בחלק זה או בסיבוב השני
 
 		// this is used only for this operations: jmp, bne, jsr
-		if(op_index!=9 && op_index!= 10 && op_index!=11)
+		if (op_index != 9 && op_index != 10 && op_index != 11)
 		{
-			print_syntax_error(ERROR_CODE_32, line->file_name,line->line_number);
-			FOUND_ERROR_IN_FIRST_PASS=1;
+			print_syntax_error(ERROR_CODE_32, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return -1;
 		}
-		(*ptr)+=5;
-		return RELATIVE; //יחסי
 
+		return RELATIVE; // יחסי
 	}
-	else if(1) //  אם המילה הבאה אחרי הפעולה זה תווית שהוגדרה או תוגדר בהמשך
+	else if (1) //  אם המילה הבאה אחרי הפעולה זה תווית שהוגדרה או תוגדר בהמשך
 	{
 		return DIRECT;
+	}
+	else // המילה היא לא אף אחת מהאפשרויות הנל- ז"א שיש שגיאה
+	{
+		return -1;
 	}
 }
 
 int is_legal_method(Line *line, int method, int op_index, int num_args)
 {
-	if(num_args==1)// need to check only destination
+	if (num_args == 1) // need to check only destination
 	{
 		switch (operation_list[op_index].address_method.address_method_dest)
 		{
 		case METHOD_0_1_3:
-			if(method==RELATIVE)
+			if (method == RELATIVE)
 			{
-				print_syntax_error(ERROR_CODE_34, line->file_name,line->line_number);
-				FOUND_ERROR_IN_FIRST_PASS=1;
+				print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
+				FOUND_ERROR_IN_FIRST_PASS = 1;
 				return 1;
 			}
 			return 0; // METHOD IS LEGAL
-		
+
 		case METHOD_1_2:
-			if(method==DIRECT || method==DIRECT_REGISTER)
+			if (method == DIRECT || method == DIRECT_REGISTER)
 			{
-				print_syntax_error(ERROR_CODE_34, line->file_name,line->line_number);
-				FOUND_ERROR_IN_FIRST_PASS=1;
+				print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
+				FOUND_ERROR_IN_FIRST_PASS = 1;
 				return 1;
 			}
 			return 0;
 
 		case METHOD_1_3:
-			if(method==DIRECT || method==RELATIVE)
+			if (method == DIRECT || method == RELATIVE)
 			{
-				print_syntax_error(ERROR_CODE_34, line->file_name,line->line_number);
-				FOUND_ERROR_IN_FIRST_PASS=1;
+				print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
+				FOUND_ERROR_IN_FIRST_PASS = 1;
 				return 1;
 			}
 			return 0;
-		
+
 		default:
 			return 0;
 		}
+	}
+	// its 2 args- need to check only the src (dest already checked in last if)
+	switch (operation_list[op_index].address_method.address_method_source)
+	{
+	case METHOD_0_1_3:
+		if (method == RELATIVE)
+		{
+			print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return 1;
+		}
+		return 0;
+
+	case METHOD_1:
+		if (method == DIRECT || method == RELATIVE || method == DIRECT_REGISTER)
+		{
+			print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return 1;
+		}
+		return 0;
+	default:
+		return 0;
 	}
 }
 
@@ -251,7 +309,7 @@ int is_register(char *ptr)
 {
 	for (int i = 0; i < NUM_OF_REG; i++)
 	{
-		if (strncmp(ptr, REGISTERS[i], TWO)==0)
+		if (strncmp(ptr, REGISTERS[i], TWO) == 0)
 		{
 			return 1;
 		}
