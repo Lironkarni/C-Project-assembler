@@ -75,6 +75,11 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         code_image[IC].target_address = (uint8_t)(ZERO & MASK);
         code_image[IC].target_reg = (uint8_t)(ZERO & MASK);
         IC++;
+        return;
+    }
+    if(num_args==1)
+    {
+
     }
 }
 

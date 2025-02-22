@@ -22,8 +22,8 @@ typedef struct symbol {
 
 extern Symbol *symbol_table_head;
 
-int first_pass(char *file);
-int process_line(char* file);
+void first_pass(char *file);
+void process_line(char* file);
 void process_word(Line* line, char* first_word);
 int which_instruction(char *word);
 void add_symbol(Line *line, char *name, int instruction_index, int is_code);

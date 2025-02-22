@@ -47,6 +47,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 	{
 		print_syntax_error(ERROR_CODE_25, line->file_name, line->line_number);
 		FOUND_ERROR_IN_FIRST_PASS = 1;
+		return;
 	}
 
 	num_args = operation_list[op_index].address_method.num_args; // מספר האופרנדים של הפקודה
@@ -66,7 +67,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			return;
 		}
 		add_to_code_image(code_image, line, num_args, op_index);
-		break;
+		return;
 
 	case 1:
 		if (*ptr == NULL_CHAR) // missing operand
@@ -115,10 +116,14 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		{
 			return;
 		}
-		// before adding to code_image need to make sure it label that defined
+		// TODO- before adding to code_image need to make sure it label that defined
 		//  if need to take care in first pass so here need to send to
-		// add_to_code_image();
-		break;
+		//
+		
+		//add_to_code_image(code_image,line,num_args,op_index);
+
+
+		return;
 	case 2:
 		if (*ptr == NULL_CHAR) // missing operand
 		{
@@ -211,6 +216,9 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
 				return -1;
 			}
 		}
+		//TODO-
+		// check if number is in the valid range- 
+		//need to check if its negative number- שיטת המשלים ל2
 		return IMMEDIATE;
 	}
 	else if (is_register(ptr)) // check if register

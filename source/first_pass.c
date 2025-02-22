@@ -13,22 +13,12 @@ char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 Symbol *symbol_table_head = NULL;
 
 /*start the first pass*/
-int first_pass(char *file)
+void first_pass(char *file)
 {
-
-    if (process_line(file) != 0)
-    {
-        /*if errors found, dont make obj file and entries, externals but continue to go over this file*/
-        printf("found errors, don't move to next file\n");
-    }
-    else
-    {
-        printf("start second pass");
-    }
-    return 0;
+    process_line(file);
 }
 
-int process_line(char *file)
+void process_line(char *file)
 {
     FILE *input_file;
     char temp_line[MAX_LINE_LEN + 2], *first_word = NULL; /*for \0 and one more char for overflow check*/
@@ -72,16 +62,15 @@ int process_line(char *file)
             first_word = get_word(line->data);
             process_word(line, first_word);
         }
-        test(DC,IC);
+        test(DC, IC);
     }
     fclose(input_file);
-    return 0;
 }
 
 void process_word(Line *line, char *first_word)
 {
     op_code curr_op;
-    int word_len, instruction_index, is_code=0;
+    int word_len, instruction_index, is_code = 0;
     char *second_word, *string_value;
     int *numbers = NULL;
     int is_label = 0;
@@ -111,7 +100,7 @@ void process_word(Line *line, char *first_word)
         case 0: // data
             if (is_label)
             {
-                add_symbol(line, first_word,instruction_index,is_code);
+                add_symbol(line, first_word, instruction_index, is_code);
             }
             if (get_data(line, instruction_index, &numbers))
             {
@@ -127,7 +116,7 @@ void process_word(Line *line, char *first_word)
 
             if (is_label)
             {
-                add_symbol(line, first_word, instruction_index,is_code);
+                add_symbol(line, first_word, instruction_index, is_code);
             }
             if (get_string_data(line, instruction_index, &string_value))
             {
@@ -150,15 +139,15 @@ void process_word(Line *line, char *first_word)
                 printf("WARNING: label is ignored in extern line\n");
             }
             second_word = get_word(NULL);
-            add_symbol(line, second_word,instruction_index,is_code);
+            add_symbol(line, second_word, instruction_index, is_code);
             break;
         }
         return;
     }
 
-    else // not instruction. its operation 
+    else // not instruction. its operation
     {
-        analyse_operation(line,second_word, is_label, first_word, instruction_index, code_image); // ניתוח הקלט (מספר אופרנדים ושיטת מיעון וכו)
+        analyse_operation(line, second_word, is_label, first_word, instruction_index, code_image); // ניתוח הקלט (מספר אופרנדים ושיטת מיעון וכו)
     }
 }
 
@@ -175,7 +164,7 @@ int which_instruction(char *word)
 
 void add_symbol(Line *line, char *name, int instruction_index, int is_code)
 {
-    guide_type type= (guide_type)instruction_index;
+    guide_type type = (guide_type)instruction_index;
     if (find_symbol(name) == NULL)
     {
         Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
@@ -189,12 +178,13 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
         new_symbol->type = type;
         new_symbol->next = symbol_table_head;
         symbol_table_head = new_symbol;
-        if (instruction_index==EXTERN_INDEX)
+        if (instruction_index == EXTERN_INDEX)
         {
             new_symbol->address = -100; // sholdn't it be 0?
         }
-        else if(is_code){
-            new_symbol->address = IC;   
+        else if (is_code)
+        {
+            new_symbol->address = IC;
         }
         else
         {
@@ -394,7 +384,7 @@ void test(int dc, int ic)
     printf("-----------------------------\n");
 
     printf("Code Image\n");
-    printf("%d\n",ic);
+    printf("%d\n", ic);
     // הדפסת תמונת הקוד
     for (int i = 100; i < ic; i++)
     {
