@@ -162,53 +162,6 @@ int which_instruction(char *word)
     return -1;
 }
 
-void add_symbol(Line *line, char *name, int instruction_index, int is_code)
-{
-    guide_type type = (guide_type)instruction_index;
-    if (find_symbol(name) == NULL)
-    {
-        Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
-        if (!new_symbol)
-        {
-            print_system_error(ERROR_CODE_3);
-            return;
-        }
-
-        strcpy(new_symbol->name, name);
-        new_symbol->type = type;
-        new_symbol->next = symbol_table_head;
-        symbol_table_head = new_symbol;
-        if (instruction_index == EXTERN_INDEX)
-        {
-            new_symbol->address = -100; // sholdn't it be 0?
-        }
-        else if (is_code)
-        {
-            new_symbol->address = IC;
-        }
-        else
-        {
-            new_symbol->address = DC;
-        }
-    }
-    else
-    {
-        print_syntax_error(ERROR_CODE_18, line->file_name, line->line_number);
-        return;
-    }
-}
-
-Symbol *find_symbol(char *name)
-{
-    Symbol *current = symbol_table_head;
-    while (current)
-    {
-        if (strcmp(current->name, name) == 0)
-            return current;
-        current = current->next;
-    }
-    return NULL;
-}
 
 /*this function get the data if its ".data", and check if its valid or there are errors*/
 int get_data(Line *line, int inst_index, int **numbers)
