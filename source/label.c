@@ -49,7 +49,6 @@ int is_valid_label(char *label, Line *line)
 	return 0;
 }
 
-
 void add_symbol(Line *line, char *name, int instruction_index, int is_code)
 {
     guide_type type = (guide_type)instruction_index;
@@ -61,7 +60,6 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
             print_system_error(ERROR_CODE_3);
             return;
         }
-
         strcpy(new_symbol->name, name);
         new_symbol->type = type;
         new_symbol->next = symbol_table_head;
@@ -85,7 +83,6 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
         return;
     }
 }
-
 Symbol *find_symbol(char *name)
 {
     Symbol *current = symbol_table_head;

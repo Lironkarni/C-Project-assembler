@@ -2,6 +2,7 @@
 #define LABEL_H
 #include "../headers/utils.h"
 #include "../headers/error.h"
+#include "../headers/process_input.h"
 
 #define MAX_LABEL_LENGTH 31
 

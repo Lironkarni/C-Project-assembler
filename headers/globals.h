@@ -26,10 +26,14 @@
 #define SPACE ' '
 #define NUMBER_SIGN '#'
 #define AMPERSAND '&'
+#define MINUS '-'
+#define PLUS '+'
 #define NULL_CHAR '\0'
 #define DECIMAL 10
 #define EXTERN_INDEX 3
 #define MASK 0xFF
 #define ZERO 0
 #define TWO 2
+#define MIN_21BIT -1048576
+#define MAX_21BIT 1048575
 #endif

@@ -116,6 +116,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		{
 			return;
 		}
+		//one_operand_process(line, code_image, address_method_des,first_operand,op_index);
 		// add_to_code_image(code_image,line,num_args,op_index);
 
 		return;
@@ -199,10 +200,11 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 }
 int which_addressing_method(char *ptr, int op_index, Line *line)
 {
+	long num_ptr;
 	if (*ptr == NUMBER_SIGN) // if start with #
 	{
 		ptr++;
-		if (*ptr == '-' || *ptr == '+')
+		if (*ptr == MINUS || *ptr == PLUS)
 		{
 			if (!isdigit(*(ptr + 1)))
 			{ // אם אחרי '-' או '+' לא בא מספר - שגיאה
@@ -219,9 +221,12 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
 				return -1;
 			}
 		}
-		// TODO-
-		//  check if number is in the valid range-
-		// need to check if its negative number- שיטת המשלים ל2
+		num_ptr = strtol(ptr, NULL, DECIMAL);
+		if (num_ptr < MIN_21BIT || num_ptr > MAX_21BIT)
+		{
+			print_syntax_error(ERROR_CODE_36, line->file_name, line->line_number);
+			return -1;
+		}
 		return IMMEDIATE;
 	}
 	if (is_register(ptr)) // check if register
@@ -232,8 +237,8 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
 	if (*ptr == AMPERSAND) //&next
 	{
 		// next word after & must be label that defined or will be define later
-		if(is_valid_label(ptr,line))
-		return -1;
+		if (is_valid_label(ptr, line))
+			return -1;
 
 		// this is used only for this operations: jmp, bne, jsr
 		if (op_index != 9 && op_index != 10 && op_index != 11)
@@ -385,4 +390,3 @@ int check_if_operation(char *word)
 	}
 	return -1;
 }
-
