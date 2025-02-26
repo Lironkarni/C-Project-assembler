@@ -342,13 +342,15 @@ void test(int dc, int ic)
     for (int i = 100; i < ic; i++)
     {
         // בניית 24 ביטים מהמבנה
-        uint32_t full_word = (code_image[i].op_code << 18) |
-                             (code_image[i].source_address << 16) |
-                             (code_image[i].source_reg << 13) |
-                             (code_image[i].target_address << 11) |
-                             (code_image[i].target_reg << 8) |
-                             (code_image[i].funct << 3) |
-                             (code_image[i].A_R_E);
+        // uint32_t full_word = (code_image[i].op_code << 18) |
+        //                      (code_image[i].source_address << 16) |
+        //                      (code_image[i].source_reg << 13) |
+        //                      (code_image[i].target_address << 11) |
+        //                      (code_image[i].target_reg << 8) |
+        //                      (code_image[i].funct << 3) |
+        //                      (code_image[i].A_R_E);
+        uint32_t full_word = 0;
+        memcpy(&full_word, &code_image[i], 3);  // מעתיקים רק 3 בתים (24 ביטים)
 
         printf("Address %d: ", i);
         print_bits(full_word, 24); // הדפסת כל הביטים

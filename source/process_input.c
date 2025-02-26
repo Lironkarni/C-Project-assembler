@@ -66,7 +66,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		add_to_code_image(code_image, line, num_args, op_index);
+		add_to_code_image(code_image, line, num_args, op_index,ZERO, ZERO,ZERO, NULL,NULL);
 		return;
 
 	case 1:
@@ -91,16 +91,16 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			return;
 		}
 
-		first_operand = get_word(NULL);
-		len = strlen(first_operand);
-		if (first_operand[len - 1] == COMMA)
+		second_operand = get_word(NULL);
+		len = strlen(second_operand);
+		if (second_operand[len - 1] == COMMA)
 		{
 			print_syntax_error(ERROR_CODE_35, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
 		/*need to check if addressing method is legal*/
-		address_method_des = which_addressing_method(first_operand, op_index, line);
+		address_method_des = which_addressing_method(second_operand, op_index, line);
 		if (address_method_des == -1)
 			return; // there was error. no need to keep analysing this line
 
@@ -116,8 +116,8 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		{
 			return;
 		}
-		//one_operand_process(line, code_image, address_method_des,first_operand,op_index);
-		// add_to_code_image(code_image,line,num_args,op_index);
+
+		add_to_code_image(code_image,line,num_args,op_index,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
 
 		return;
 	case 2:
@@ -189,7 +189,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		{
 			return;
 		}
-		// add_to_code_image();
+		add_to_code_image(code_image,line,num_args,op_index,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
 		break;
 
 	default:
@@ -212,6 +212,7 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
 				return -1;
 			}
 		}
+		ptr++;
 		while (*ptr != SPACE && *ptr != NULL_CHAR)
 		{
 
