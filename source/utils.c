@@ -179,7 +179,7 @@ void pre_assembler(const char *filename)
         else if (inside_macro) { 
             macro_content = (char **)realloc(macro_content, (new_line_count + 1) * sizeof(char *));
             if (!macro_content) {
-                printf("Memory allocation failed while storing macro content.\n");
+                print_system_error(ERROR_CODE_3);
                 exit(1);
             }
             macro_content[new_line_count] = strdup(line);
@@ -211,7 +211,7 @@ char *load_file(char *filename) {
 
     char *filename_with_extension = (char *)malloc(strlen("test-files/") + strlen(filename) + strlen(".as") + 1);
     if (!filename_with_extension) {
-        printf("Error: Memory allocation failed.\n");
+        print_system_error(ERROR_CODE_3);
         return NULL;
     }
         sprintf(filename_with_extension, "test-files/%s.as", filename);
@@ -219,7 +219,7 @@ char *load_file(char *filename) {
     FILE *file = fopen(filename_with_extension, "r");
     if (!file)
     {
-        printf("Error: File %s does not exist. Skipping.\n", filename_with_extension);
+        print_system_error(ERROR_CODE_2);
         free(filename_with_extension);
         return NULL;
     }
@@ -233,7 +233,7 @@ void check_the_file(const char *filename_am)
     FILE *file = fopen(filename_am, "r");
     if (!file)
     {
-        printf("Error: Unable to open %s for reading.\n", filename_am);
+        print_system_error(ERROR_CODE_5);
         return;
     }
 
@@ -252,7 +252,7 @@ void check_the_file(const char *filename_am)
     FILE *file_ah = fopen(filename_ah, "w");
     if (!file_ah)
     {
-        printf("Error: Unable to open %s for writing.\n", filename_ah);
+        print_system_error(ERROR_CODE_6);
         return;
     }
 
@@ -282,7 +282,7 @@ void free_macros() {
 int is_valid_macro_name(char *macro_name ,const char *filename , int line_count) {
     int valid = 0;
     //The line contains unnecessary characters.
-    if (strchr(macro_name, ' ') != NULL) {
+    if (strchr(macro_name, SPACE) != NULL) {
         print_syntax_error(ERROR_CODE_15, filename ,line_count);
         valid = 1;
     }
@@ -303,17 +303,13 @@ int is_valid_macro_name(char *macro_name ,const char *filename , int line_count)
             valid = 1;
         }
     }
-
-
-
-    
     return valid; 
 }
 
 int is_valid_macro_end(char *line, const char *filename, int line_count) {
     char *ptr = line + 7;
 
-    if (*ptr != '\0' && *ptr != '\n') {
+    if (*ptr != NULL_CHAR && *ptr != NULL_CHAR) {
         print_syntax_error(ERROR_CODE_16, filename , line_count);
         return 1;
     }
@@ -328,7 +324,7 @@ void delete_am_file(const char *filename) {
 
     char *am_filename = (char *)malloc(len);
     if (am_filename == NULL) {
-        perror("Memory allocation failed");
+        print_system_error(ERROR_CODE_3);
         return;
     }
 
@@ -337,7 +333,7 @@ void delete_am_file(const char *filename) {
     if (remove(am_filename) == 0) {
         printf("File %s deleted successfully.\n", am_filename);
     } else {
-        perror("Error deleting file");
+        print_system_error(ERROR_CODE_7);
     }
 
     free(am_filename);

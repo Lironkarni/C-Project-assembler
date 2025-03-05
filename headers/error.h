@@ -45,14 +45,17 @@ typedef enum error_codes
     ERROR_CODE_33,
     ERROR_CODE_34,
     ERROR_CODE_35,
-    ERROR_CODE_36
+    ERROR_CODE_36,
+    ERROR_CODE_37,
+    ERROR_CODE_38,
+    ERROR_CODE_39
 
 
 }error_codes;
 
 extern int FOUND_ERROR_IN_PRE_ASSEMBLER;
 extern int FOUND_ERROR_IN_FIRST_PASS;
-
+extern int FOUND_ERROR_IN_SECOND_PASS;
 
 void print_system_error(int error_code);
 

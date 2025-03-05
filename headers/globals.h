@@ -36,4 +36,6 @@
 #define TWO 2
 #define MIN_21BIT -1048576
 #define MAX_21BIT 1048575
+#define THREE_BITS_SHIFT 3
+
 #endif

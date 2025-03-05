@@ -2,6 +2,7 @@
 #include "../headers/globals.h"
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
+#include "../headers/second_pass.h"
 
 int main(int argc, char *argv[]) {
     int i;
@@ -32,12 +33,9 @@ int main(int argc, char *argv[]) {
             char filename_am[256];
             snprintf(filename_am, sizeof(filename_am), "test-files/%s.am", argv[i]);
             check_the_file(filename_am);
-            first_pass(filename_am);
-            if (FOUND_ERROR_IN_FIRST_PASS){
-                FOUND_ERROR_IN_FIRST_PASS = 0;
+            if(first_pass(filename_am))
                 continue;
-            }
-            //second_pass
+                          
         } else {
             printf("in main not found\n");
             printf("File %s.as not found.\n", argv[i]);

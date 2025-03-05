@@ -31,6 +31,7 @@ typedef union
     uint32_t all_bits : 24;
 } code_union;
 
+
 typedef struct
 {
     uint32_t data : 24;

@@ -6,7 +6,7 @@
 #define INSTRUCTION_COUNT 4
 
 
-void first_pass(char *file);
+int first_pass(char *file);
 void process_line(char* file);
 void process_word(Line* line, char* first_word);
 int which_instruction(char *word);

@@ -62,6 +62,12 @@ void add_string_data(data_word *data_image, char *char_array, Line *line)
 
 void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_index, int funct, int address_method_src, int address_method_des, char *first_operand, char *second_operand)
 {
+    if(IC>=MEM_SIZE)
+    {
+        print_system_error(ERROR_CODE_37);
+        //???
+        // stop the program? stop forst pass?
+    }
     code_union code_u;
     // A_R_E A = 4;
     code_image[IC].op_code = (uint8_t)(op_index & MASK);
@@ -74,7 +80,6 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         int reg_src = strtol(&first_operand[1], NULL, DECIMAL);
         code_image[IC].source_reg = (uint8_t)(reg_src & MASK);
     }
-
     else
     {
         code_image[IC].source_reg = (uint8_t)(ZERO & MASK);
@@ -103,30 +108,51 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         switch (address_method_src)
         {
         case IMMEDIATE:
-            second_operand += 1;
-            int num = strtol(second_operand, NULL, DECIMAL);
+            first_operand += 1;
+            int num = strtol(first_operand, NULL, DECIMAL);
             code_u.all_bits = num;
+            code_u.all_bits <<= THREE_BITS_SHIFT;
+            code_u.all_bits |= a_r_e.A;
+
             code_image[IC] = code_u.code_w;
             IC++;
 
-            return;
+            break;
+            ;
+        case DIRECT_REGISTER:
+            break;
 
-        default:
+        case RELATIVE:
+        case DIRECT:
+            // need to allocate place in code_image and set the data in second pass
+            code_u.all_bits = ZERO;
+            code_image[IC] = code_u.code_w;
+            IC++;
             break;
         }
     }
+    // for the scond operand of 2 args and first operand of 1 args
     switch (address_method_des)
     {
     case IMMEDIATE:
         second_operand += 1;
         int num = strtol(second_operand, NULL, DECIMAL);
         code_u.all_bits = num;
+        code_u.all_bits <<= THREE_BITS_SHIFT;
+        code_u.all_bits |= a_r_e.A;
+
         code_image[IC] = code_u.code_w;
         IC++;
-
         return;
+    case DIRECT_REGISTER:
+        break;
 
-    default:
+    case RELATIVE:
+    case DIRECT:
+        // need to allocate place in code_image and set the data in second pass
+        code_u.all_bits = ZERO;
+        code_image[IC] = code_u.code_w;
+        IC++;
         break;
     }
 }

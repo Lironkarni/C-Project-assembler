@@ -7,7 +7,7 @@ int is_valid_label(char *label, Line *line)
 	check if length is lower than 32 (MAX_LABEL_LENGTH)
 	check if label name is saved assembly name
 	check if label as been defind yet
-	check if this is not a name of a macro*/
+	check if this is not a name of a macro or name of register*/
 	int i = 0, len;
 	int op;
 	len = strlen(label);
@@ -45,7 +45,11 @@ int is_valid_label(char *label, Line *line)
 		print_syntax_error(ERROR_CODE_9, line->file_name, line->line_number);
 		return 1;
 	}
-
+	if(is_register(label))
+	{
+		print_syntax_error(ERROR_CODE_19, line->file_name, line->line_number);
+		return 1;
+	}
 	return 0;
 }
 
@@ -60,13 +64,14 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
             print_system_error(ERROR_CODE_3);
             return;
         }
-        strcpy(new_symbol->name, name);
+        strncpy(new_symbol->name, name,sizeof(new_symbol->name) - 1);
+		new_symbol->name[sizeof(new_symbol->name) - 1] = '\0';
         new_symbol->type = type;
         new_symbol->next = symbol_table_head;
         symbol_table_head = new_symbol;
         if (instruction_index == EXTERN_INDEX)
         {
-            new_symbol->address = -100; // sholdn't it be 0?
+            new_symbol->address = -100; 
         }
         else if (is_code)
         {
@@ -93,4 +98,28 @@ Symbol *find_symbol(char *name)
         current = current->next;
     }
     return NULL;
+}
+
+int add_to_ext_ent_list(char *label_name, int type, Line *line)
+{
+	//ext_ent_list *current= ext_ent_list_head;
+	ext_ent_list *new_label = (ext_ent_list *)malloc(sizeof(ext_ent_list));
+        if (!new_label)
+        {
+            print_system_error(ERROR_CODE_3);
+            return 1;
+        }
+		new_label->label_name = malloc(strlen(label_name) + 1);
+		if (!new_label->label_name) {
+			free(new_label); // Free the struct to prevent memory leaks
+			print_system_error(ERROR_CODE_3);
+			return 1;
+		}
+		strcpy(new_label->label_name, label_name);
+		new_label->type=type;
+		new_label->line=line;
+		new_label->next=ext_ent_list_head;
+		ext_ent_list_head=new_label;
+
+		return 0;
 }

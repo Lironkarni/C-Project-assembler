@@ -4,6 +4,9 @@
 #include "../headers/first_pass.h"
 #include "../headers/process_input.h"
 #include "../headers/memory_struct.h"
+#include "../headers/label.h"
+#include "../headers/second_pass.h"
+
 
 code_word code_image[MEM_SIZE];
 data_word data_image[MEM_SIZE];
@@ -11,11 +14,19 @@ data_word data_image[MEM_SIZE];
 char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 
 Symbol *symbol_table_head = NULL;
+ext_ent_list *ext_ent_list_head = NULL; 
+
 
 /*start the first pass*/
-void first_pass(char *file)
+int first_pass(char *file)
 {
     process_line(file);
+    if (FOUND_ERROR_IN_FIRST_PASS){
+        FOUND_ERROR_IN_FIRST_PASS = 0;
+        return 1;
+    }
+    second_pass(file, ext_ent_list_head, symbol_table_head);  //second_pass
+    return 0;
 }
 
 void process_line(char *file)
@@ -38,7 +49,7 @@ void process_line(char *file)
             line_number++;
             line_len = strlen(temp_line);        /*get line length*/
             if (temp_line[line_len - 1] == '\n') /*put '\0' at the end of each line*/
-                temp_line[line_len - 1] = '\0';
+                temp_line[line_len - 1] = NULL_CHAR;
 
             if (line_len > MAX_LINE_LEN)
                 if (temp_line[MAX_LINE_LEN] != '\0' && temp_line[MAX_LINE_LEN] != '\n')
@@ -69,13 +80,11 @@ void process_line(char *file)
 
 void process_word(Line *line, char *first_word)
 {
-    op_code curr_op;
     int word_len, instruction_index, is_code = 0;
     char *second_word, *string_value;
     int *numbers = NULL;
     int is_label = 0;
 
-    printf("first word is %s\n", first_word);
     word_len = strlen(first_word);
 
     if (first_word[word_len - 1] == COLON)
@@ -83,14 +92,12 @@ void process_word(Line *line, char *first_word)
         is_label = 1;
         if (is_valid_label(first_word, line))
         {
-            printf("found error in label %s\n", line->data);
             FOUND_ERROR_IN_FIRST_PASS = 1;
         }
         first_word[word_len - 1] = '\0';
     }
 
     second_word = is_label ? get_word(NULL) : first_word;
-    printf("second word is: %s\n", second_word);
     instruction_index = which_instruction(second_word);
 
     if (instruction_index != -1) // אם זו הנחיה
@@ -128,17 +135,20 @@ void process_word(Line *line, char *first_word)
             }
             break;
         case 2: // entry
+            second_word = get_word(NULL);
+            add_to_ext_ent_list(second_word, ENTRY, line);
             if (is_label)
             {
                 printf("WARNING: label is ignored in entry line\n");
             }
             break; // handle in second pass
         case 3:    // extern
+            second_word = get_word(NULL);
+            add_to_ext_ent_list(second_word, EXTERNAL, line);
             if (is_label)
             {
                 printf("WARNING: label is ignored in extern line\n");
             }
-            second_word = get_word(NULL);
             add_symbol(line, second_word, instruction_index, is_code);
             break;
         }
@@ -180,7 +190,7 @@ int get_data(Line *line, int inst_index, int **numbers)
         print_system_error(ERROR_CODE_3);
         exit(1);
     }
-    while (*data_ptr != '\0')
+    while (*data_ptr != NULL_CHAR)
     {
         if (expect_number)
         {
@@ -224,7 +234,7 @@ int get_data(Line *line, int inst_index, int **numbers)
             expect_number = 1;
             data_ptr++;
         }
-        while (*data_ptr == ' ')
+        while (*data_ptr == SPACE)
             data_ptr++;
     }
     // check if line ended with comma
@@ -234,7 +244,7 @@ int get_data(Line *line, int inst_index, int **numbers)
         free(*numbers);
         return 1;
     }
-    (*numbers)[count] = '\0';
+    (*numbers)[count] = NULL_CHAR;
     return 0;
 }
 
@@ -357,7 +367,18 @@ void test(int dc, int ic)
         printf(" (0x%06X)\n", full_word);
     }
     printf("-----------------------------\n");
+
+    ext_ent_list *current_ext=ext_ent_list_head;
+    printf("extern entry Table:\n");
+    printf("-----------------------------\n");
+    while (current_ext)
+    {
+        printf("Name: %s| Type: %d| line_number: %d\n", current_ext->label_name, current_ext->type, current_ext->line->line_number);
+        current_ext = current_ext->next;
+    }
+    printf("-----------------------------\n\n");
 }
+
 
 void print_bits(uint32_t value, int bits)
 {
