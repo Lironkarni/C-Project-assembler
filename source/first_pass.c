@@ -24,7 +24,7 @@ int first_pass(char *file)
         FOUND_ERROR_IN_FIRST_PASS = 0;
         return 1;
     }
-    second_pass(file, ext_ent_list_head, symbol_table_head); // second_pass
+    second_pass(file, ext_ent_list_head, symbol_table_head, code_image); // second_pass
     return 0;
 }
 

@@ -96,8 +96,13 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         code_image[IC].target_reg = (uint8_t)(ZERO & MASK);
     }
     IC++;
-    if (num_args == 0)
+    if (num_args == 0){
+        code_image[IC].first_operand=NULL;
+        code_image[IC].second_operand=NULL;
         return;
+
+    }
+        
     // מה שיטת המיעון של האופרנד
     // מיידי- זה מספר
     // ישיר או יחסי- לעשות הקצאה למקום
@@ -155,4 +160,7 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         IC++;
         break;
     }
+
+    code_image[IC].first_operand=first_operand;
+    code_image[IC].second_operand=second_operand;
 }

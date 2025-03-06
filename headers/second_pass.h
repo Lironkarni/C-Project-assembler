@@ -3,7 +3,7 @@
 
 #include "../headers/label.h"
 
-void second_pass(char *file, ext_ent_list *head, Symbol *symbol_table_head);
+void second_pass(char *file, ext_ent_list *head, Symbol *symbol_table_head, code_word *code_image);
 int check_externs(ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head);
 
 

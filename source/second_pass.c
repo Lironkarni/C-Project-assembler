@@ -3,7 +3,7 @@
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
 
-void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head)
+void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head, code_word *code_image)
 {
     FILE *input_file;
     char temp_line[MAX_LINE_LEN + 2];
@@ -60,6 +60,16 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
             else if (op_index = check_if_operation(second_word) != -1) // its operation
             {
                 printf("operation in second pass");
+
+                //we can go over the code_image list, if line in 0, that means its a label. 
+                for(int i=0;i<MEM_SIZE;i++)
+                {
+                    if(code_image[IC].funct==ZERO)//this in NOT good, we have op_code 0- need to understand what to write here
+                    {
+                        //it can be in the line before or 2 before
+                        //the line before can be a number for ex- add #6 HELLO
+                    }
+                }
             }
         }
     }
