@@ -7,25 +7,24 @@
 #include "../headers/label.h"
 #include "../headers/second_pass.h"
 
-
 code_word code_image[MEM_SIZE];
 data_word data_image[MEM_SIZE];
 
 char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 
 Symbol *symbol_table_head = NULL;
-ext_ent_list *ext_ent_list_head = NULL; 
-
+ext_ent_list *ext_ent_list_head = NULL;
 
 /*start the first pass*/
 int first_pass(char *file)
 {
     process_line(file);
-    if (FOUND_ERROR_IN_FIRST_PASS){
+    if (FOUND_ERROR_IN_FIRST_PASS)
+    {
         FOUND_ERROR_IN_FIRST_PASS = 0;
         return 1;
     }
-    second_pass(file, ext_ent_list_head, symbol_table_head);  //second_pass
+    second_pass(file, ext_ent_list_head, symbol_table_head); // second_pass
     return 0;
 }
 
@@ -149,7 +148,10 @@ void process_word(Line *line, char *first_word)
             {
                 printf("WARNING: label is ignored in extern line\n");
             }
-            add_symbol(line, second_word, instruction_index, is_code);
+            if (is_valid_label(second_word, line))
+                FOUND_ERROR_IN_FIRST_PASS = 1;
+            else
+                add_symbol(line, second_word, instruction_index, is_code);
             break;
         }
         return;
@@ -171,7 +173,6 @@ int which_instruction(char *word)
     }
     return -1;
 }
-
 
 /*this function get the data if its ".data", and check if its valid or there are errors*/
 int get_data(Line *line, int inst_index, int **numbers)
@@ -360,7 +361,7 @@ void test(int dc, int ic)
         //                      (code_image[i].funct << 3) |
         //                      (code_image[i].A_R_E);
         uint32_t full_word = 0;
-        memcpy(&full_word, &code_image[i], 3);  // מעתיקים רק 3 בתים (24 ביטים)
+        memcpy(&full_word, &code_image[i], 3); // מעתיקים רק 3 בתים (24 ביטים)
 
         printf("Address %d: ", i);
         print_bits(full_word, 24); // הדפסת כל הביטים
@@ -368,7 +369,7 @@ void test(int dc, int ic)
     }
     printf("-----------------------------\n");
 
-    ext_ent_list *current_ext=ext_ent_list_head;
+    ext_ent_list *current_ext = ext_ent_list_head;
     printf("extern entry Table:\n");
     printf("-----------------------------\n");
     while (current_ext)
@@ -378,7 +379,6 @@ void test(int dc, int ic)
     }
     printf("-----------------------------\n\n");
 }
-
 
 void print_bits(uint32_t value, int bits)
 {

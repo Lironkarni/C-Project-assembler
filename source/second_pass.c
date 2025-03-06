@@ -5,16 +5,12 @@
 
 void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head)
 {
-    // if (check_externs(ext_ent_list_head, symbol_table_head))
-    // {
-    //     FOUND_ERROR_IN_SECOND_PASS = 1;
-    // }
-
     FILE *input_file;
     char temp_line[MAX_LINE_LEN + 2];
-    int line_number=0, line_len;
+    int line_number = 0, line_len, word_len, is_label = 0, op_index;
     Line *line;
     char *first_word, *second_word;
+    Symbol *current_symbol;
 
     input_file = fopen(file, "r");
     if (input_file == NULL)
@@ -32,19 +28,39 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
 
             line = create_line(temp_line, file, line_number);
             first_word = get_word(line->data);
-            second_word = get_word(NULL);
+            word_len = strlen(first_word);
 
-            int inst_index=which_instruction(first_word);
-            if(inst_index==TWO)// its entry
+            if (first_word[word_len - 1] == COLON)
+                is_label = 1;
+            second_word = is_label ? get_word(NULL) : first_word;
+
+            int inst_index = which_instruction(first_word);
+            if (inst_index == TWO) // its entry
             {
-                //need to make sure label is declared already in label list
-                if(find_symbol(second_word)!=NULL)
+                // need to make sure label is declared already in label list
+
+                current_symbol = find_symbol(second_word);
+                current_symbol = (Symbol *)malloc(sizeof(Symbol));
+                if (!current_symbol)
+                {
+                    print_system_error(ERROR_CODE_3);
+                    return;
+                }
+                if (current_symbol == NULL)
                 {
                     print_syntax_error(ERROR_CODE_39, line->file_name, line->line_number);
-                    FOUND_ERROR_IN_SECOND_PASS=1;
+                    FOUND_ERROR_IN_SECOND_PASS = 1;
                 }
+                // add type entry to the label we found in label list
+                current_symbol->type = ENTRY;
             }
-            //add type entry to the label in label list
+
+            // check if line has label- if yes, look if label exists in symbol table
+
+            else if (op_index = check_if_operation(second_word) != -1) // its operation
+            {
+                printf("operation in second pass");
+            }
         }
     }
 }
