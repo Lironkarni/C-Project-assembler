@@ -62,9 +62,11 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                 printf("operation in second pass");
 
                 //we can go over the code_image list, if line in 0, that means its a label. 
-                for(int i=0;i<MEM_SIZE;i++)
+                for(int i=100;i<IC;i++)
                 {
-                    if(code_image[IC].funct==ZERO)//this in NOT good, we have op_code 0- need to understand what to write here
+                    code_union code_u;
+                    code_u.all_bits = code_image[i]; 
+                    if(code_u.all_bits==ZERO)//this in NOT good, we have op_code 0- need to understand what to write here
                     {
                         //it can be in the line before or 2 before
                         //the line before can be a number for ex- add #6 HELLO

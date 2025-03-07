@@ -69,7 +69,6 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         // stop the program? stop forst pass?
     }
     code_union code_u;
-    // A_R_E A = 4;
     code_image[IC].op_code = (uint8_t)(op_index & MASK);
     code_image[IC].A_R_E = (uint8_t)(a_r_e.A & MASK);
     code_image[IC].funct = (uint8_t)(funct & MASK);
@@ -97,10 +96,7 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
     }
     IC++;
     if (num_args == 0){
-        code_image[IC].first_operand=NULL;
-        code_image[IC].second_operand=NULL;
         return;
-
     }
         
     // מה שיטת המיעון של האופרנד
@@ -133,8 +129,10 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
             code_u.all_bits = ZERO;
             code_image[IC] = code_u.code_w;
             IC++;
+            code_image->code.
             break;
         }
+        code_image[IC].first_operand=first_operand;
     }
     // for the scond operand of 2 args and first operand of 1 args
     switch (address_method_des)
@@ -160,7 +158,7 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         IC++;
         break;
     }
+    
 
-    code_image[IC].first_operand=first_operand;
     code_image[IC].second_operand=second_operand;
 }
