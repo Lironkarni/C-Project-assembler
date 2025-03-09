@@ -66,7 +66,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		add_to_code_image(code_image, line, num_args, op_index,ZERO, ZERO,ZERO, NULL,NULL);
+		add_to_code_image(code_image, line, num_args, operation_list[op_index].opcode,ZERO, ZERO,ZERO, NULL,NULL);
 		return;
 
 	case 1:
@@ -117,7 +117,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			return;
 		}
 
-		add_to_code_image(code_image,line,num_args,op_index,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
 
 		return;
 	case 2:
@@ -189,7 +189,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		{
 			return;
 		}
-		add_to_code_image(code_image,line,num_args,op_index,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
 		break;
 
 	default:
@@ -355,9 +355,12 @@ char *get_word(char *line)
 	}
 	// size of the current word
 	int len = 0;
-	while (current[len] != '\0' && current[len] != ' ')
+	while (current[len] != '\0' && current[len] != ' '  )
 	{
 		len++;
+		if (current[len] == ','){
+			break;
+		}
 	}
 	// allocate memory to the word
 	word = (char *)malloc(len + 1);

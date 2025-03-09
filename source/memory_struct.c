@@ -22,16 +22,9 @@ void add_data(data_word *data_image, int *numbers, Line *line)
         return;
     }
 
-    for (int i = 0; i <= numbers_size; i++)
+    for (int i = 0; i < numbers_size; i++)
     {
-        if (i == numbers_size)
-        {
-            data_image[DC].data = 0;
-        }
-        else
-        {
-            data_image[DC].data = (uint32_t)(numbers[i] & 0xFFFFFF);
-        }
+        data_image[DC].data = (uint32_t)(numbers[i] & 0xFFFFFF);
         DC++;
     }
 }
@@ -48,14 +41,7 @@ void add_string_data(data_word *data_image, char *char_array, Line *line)
 
     for (int i = 0; i <= length; i++)
     {
-        if (i == length)
-        {
-            data_image[DC].data = 0;
-        }
-        else
-        {
-            data_image[DC].data = (uint32_t)(char_array[i] & 0xFF); // רק ה-8 ביט התחתונים
-        }
+        data_image[DC].data = (uint32_t)(char_array[i] & 0xFF); // רק ה-8 ביט התחתונים
         DC++;
     }
 }
@@ -129,7 +115,7 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
             code_u.all_bits = ZERO;
             code_image[IC] = code_u.code_w;
             IC++;
-            code_image->code.
+            //code_image->code.
             break;
         }
         code_image[IC].first_operand=first_operand;

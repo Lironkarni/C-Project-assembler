@@ -57,7 +57,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
 
             // check if line has label- if yes, look if label exists in symbol table
 
-            else if (op_index = check_if_operation(second_word) != -1) // its operation
+            else if ((op_index = check_if_operation(second_word) )!= -1) // its operation
             {
                 printf("operation in second pass");
 
@@ -65,7 +65,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                 for(int i=100;i<IC;i++)
                 {
                     code_union code_u;
-                    code_u.all_bits = code_image[i]; 
+                    code_u.code_w = code_image[i]; 
                     if(code_u.all_bits==ZERO)//this in NOT good, we have op_code 0- need to understand what to write here
                     {
                         //it can be in the line before or 2 before
