@@ -277,7 +277,7 @@ int is_legal_method(Line *line, int method, int op_index, int num_args)
 			return 0; // METHOD IS LEGAL
 
 		case METHOD_1_2:
-			if (method == DIRECT || method == DIRECT_REGISTER)
+			if (method == IMMEDIATE || method == DIRECT_REGISTER)
 			{
 				print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
 				FOUND_ERROR_IN_FIRST_PASS = 1;
@@ -286,7 +286,7 @@ int is_legal_method(Line *line, int method, int op_index, int num_args)
 			return 0;
 
 		case METHOD_1_3:
-			if (method == DIRECT || method == RELATIVE)
+			if (method == IMMEDIATE || method == RELATIVE)
 			{
 				print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
 				FOUND_ERROR_IN_FIRST_PASS = 1;

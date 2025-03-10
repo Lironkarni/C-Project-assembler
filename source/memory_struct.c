@@ -1,5 +1,6 @@
 #include "../headers/memory_struct.h"
 #include "../headers/first_pass.h"
+#include "../headers/process_input.h"
 
 int IC = 100;
 int DC = 0;
@@ -128,11 +129,16 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
             // need to allocate place in code_image and set the data in second pass
             code_u.all_bits = ZERO;
             code_image[IC] = code_u.code_w;
+            code_image[IC].first_operand=first_operand; 
+            code_image[IC].second_operand=NULL;
+            code_image[IC].source_address=address_method_src; //need to save the address method of src and target
+
+            code_image[IC].target_address=address_method_des; //need to save the address method of src and target
+
+            code_image[IC].place=1;
             IC++;
-            code_image->code.
             break;
         }
-        code_image[IC].first_operand=first_operand;
     }
     // for the scond operand of 2 args and first operand of 1 args
     switch (address_method_des)
@@ -155,10 +161,14 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
         // need to allocate place in code_image and set the data in second pass
         code_u.all_bits = ZERO;
         code_image[IC] = code_u.code_w;
+        code_image[IC].first_operand=first_operand;
+        code_image[IC].second_operand=second_operand;
+        code_image[IC].source_address=address_method_src; //need to save the address method of src and target
+
+        code_image[IC].target_address=address_method_des; //need to save the address method of src and target
+        code_image[IC].place=TWO;
+
         IC++;
         break;
     }
-    
-
-    code_image[IC].second_operand=second_operand;
 }

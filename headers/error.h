@@ -48,7 +48,8 @@ typedef enum error_codes
     ERROR_CODE_36,
     ERROR_CODE_37,
     ERROR_CODE_38,
-    ERROR_CODE_39
+    ERROR_CODE_39,
+    ERROR_CODE_40
 
 
 }error_codes;

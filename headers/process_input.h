@@ -39,7 +39,6 @@ typedef struct op_code
 	int opcode;
 	int funct;
 	address_method address_method;
-
 }op_code;
 
 

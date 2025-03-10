@@ -23,11 +23,10 @@ typedef struct
     uint8_t source_reg : 3;
     uint8_t source_address : 2;
     uint8_t op_code : 6;
-    op_code *code;
     char *first_operand;
     char *second_operand;
     int place;
-    bool has_label;
+    int has_label;
 } code_word;
 
 typedef union
