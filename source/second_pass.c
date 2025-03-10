@@ -67,7 +67,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                     code_union code_u;
                     code_u.code_w = code_image[i];
 
-                    if (code_image[i].op_code==ZERO && code_image[i].funct==ZERO && code_image[i].A_R_E==ZERO && code_image[i].source_reg==ZERO && code_image[i].target_reg==ZERO) 
+                    if (code_image[i].op_code == ZERO && code_image[i].funct == ZERO && code_image[i].A_R_E == ZERO && code_image[i].source_reg == ZERO && code_image[i].target_reg == ZERO)
                     {
                         printf("line is ZERO- %d\n", line->line_number);
                         printf("first %s\n", code_image[i].first_operand);
@@ -87,32 +87,38 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                             }
                             else
                             {
-                                //change the row from ZERO to the address of the label, check if extern or internal, 
-                                //use address method that we found
-                                
-                            // need the addressing method of first operand
-                                if(code_image[i].source_address==1){
+                                // change the row from ZERO to the address of the label, check if extern or internal,
+                                // use address method that we found
+
+                                // need the addressing method of first operand
+                                if (code_image[i].source_address == 1)
+                                {
                                     printf("adderssing method- 1\n");
                                     code_u.all_bits = current_symbol->address;
-                                    if(current_symbol->type==ENTRY)
+                                    if (current_symbol->type == ENTRY)
                                     {
                                         code_u.all_bits <<= THREE_BITS_SHIFT;
                                         code_u.all_bits |= a_r_e.R;
                                     }
-                                    else if(current_symbol->type==EXTERNAL)
+                                    else if (current_symbol->type == EXTERNAL)
                                     {
                                         code_u.all_bits <<= THREE_BITS_SHIFT;
                                         code_u.all_bits |= a_r_e.E;
                                     }
-                                    //TODO- what to do if it DATA (not entry not extern)
+                                    // TODO- what to do if it DATA (not entry not extern)
                                     code_image[i] = code_u.code_w;
                                 }
-                                //for 2 operand address method 2 is not valid
+                                // for 2 operand address method 2 is not valid
                             }
                         }
-                        else if(code_image[i].place == TWO) //second operand
+                        else if (code_image[i].place == TWO) // second operand
                         {
                             // need to check if this label is in symbol table
+                            if (code_image[i].target_address == 2)
+                            {
+                                code_image[i].second_operand += 1;
+                            }
+
                             current_symbol = find_symbol(code_image[i].second_operand);
                             if (current_symbol == NULL)
                             {
@@ -122,15 +128,16 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                             }
                             else
                             {
-                                if(code_image[i].target_address==1){
+                                if (code_image[i].target_address == 1)
+                                {
                                     printf("adderssing method- 1\n");
                                     code_u.all_bits = current_symbol->address;
-                                    if(current_symbol->type==ENTRY)
+                                    if (current_symbol->type == ENTRY)
                                     {
                                         code_u.all_bits <<= THREE_BITS_SHIFT;
                                         code_u.all_bits |= a_r_e.R;
                                     }
-                                    else if(current_symbol->type==EXTERNAL)
+                                    else if (current_symbol->type == EXTERNAL)
                                     {
                                         code_u.all_bits <<= THREE_BITS_SHIFT;
                                         code_u.all_bits |= a_r_e.E;
@@ -138,17 +145,18 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                                     code_image[i] = code_u.code_w;
                                 }
 
-                                else if(code_image[i].target_address==2)
+                                else if (code_image[i].target_address == 2)
                                 {
-                                    int num= abs((i-1)-(current_symbol->address)); //caculate the abs between the addresses
-                                    code_u.all_bits=num;
+                                    int num = abs((i - 1) - (current_symbol->address)); // caculate the abs between the addresses
+                                    code_u.all_bits=ZERO;
+                                    code_u.all_bits = num;
+                                    code_u.code_w.funct=ZERO; //why do we need this, why func get value??
                                     code_u.all_bits <<= THREE_BITS_SHIFT;
                                     code_u.all_bits |= a_r_e.A;
 
-                                    code_image[i]=code_u.code_w;
+                                    code_image[i] = code_u.code_w;
                                 }
                             }
-
                         }
                     }
                 }

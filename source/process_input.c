@@ -66,7 +66,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		add_to_code_image(code_image, line, num_args, op_index,ZERO, ZERO,ZERO, NULL,NULL);
+		add_to_code_image(code_image, line, num_args, operation_list[op_index].opcode,ZERO, ZERO,ZERO, NULL,NULL);
 		return;
 
 	case 1:
@@ -117,7 +117,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			return;
 		}
 
-		add_to_code_image(code_image,line,num_args,op_index,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
 
 		return;
 	case 2:
@@ -189,7 +189,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		{
 			return;
 		}
-		add_to_code_image(code_image,line,num_args,op_index,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
 		break;
 
 	default:
@@ -238,7 +238,7 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
 	if (*ptr == AMPERSAND) //&next
 	{
 		// next word after & must be label that defined or will be define later
-		if (is_valid_label(ptr, line))
+		if (is_valid_label(ptr+1, line))
 			return -1;
 
 		// this is used only for this operations: jmp, bne, jsr
@@ -311,7 +311,7 @@ int is_legal_method(Line *line, int method, int op_index, int num_args)
 		return 0;
 
 	case METHOD_1:
-		if (method == DIRECT || method == RELATIVE || method == DIRECT_REGISTER)
+		if (method == IMMEDIATE || method == RELATIVE || method == DIRECT_REGISTER)
 		{
 			print_syntax_error(ERROR_CODE_34, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
@@ -355,10 +355,27 @@ char *get_word(char *line)
 	}
 	// size of the current word
 	int len = 0;
-	while (current[len] != '\0' && current[len] != ' ')
+	while (current[len] != '\0' && current[len] != ' '  )
 	{
 		len++;
+		if (current[len] == ','){
+			len++;
+			break;
+		}
 	}
+	// פסיקים
+	if (current[len] == ' ')  
+	{
+		int temp = len + 1;
+		while (current[temp] == ' ') 
+			temp++;
+
+		if (current[temp] == ',') 
+		{
+			len = temp + 1; 
+		}
+	}
+
 	// allocate memory to the word
 	word = (char *)malloc(len + 1);
 	if (word == NULL)
