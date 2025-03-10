@@ -23,19 +23,14 @@ void add_data(data_word *data_image, int *numbers, Line *line)
         return;
     }
 
-    for (int i = 0; i <= numbers_size; i++)
+    for (int i = 0; i < numbers_size; i++)
     {
-        if (i == numbers_size)
-        {
-            data_image[DC].data = 0;
-        }
-        else
-        {
-            data_image[DC].data = (uint32_t)(numbers[i] & 0xFFFFFF);
-        }
+        data_image[DC].data = (uint32_t)(numbers[i] & 0xFFFFFF);
         DC++;
     }
 }
+
+
 
 void add_string_data(data_word *data_image, char *char_array, Line *line)
 {

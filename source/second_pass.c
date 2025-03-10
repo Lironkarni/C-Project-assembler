@@ -95,17 +95,20 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                                 {
                                     printf("adderssing method- 1\n");
                                     code_u.all_bits = current_symbol->address;
+                                    code_u.all_bits <<= THREE_BITS_SHIFT;
                                     if (current_symbol->type == ENTRY)
                                     {
-                                        code_u.all_bits <<= THREE_BITS_SHIFT;
                                         code_u.all_bits |= a_r_e.R;
                                     }
                                     else if (current_symbol->type == EXTERNAL)
                                     {
-                                        code_u.all_bits <<= THREE_BITS_SHIFT;
                                         code_u.all_bits |= a_r_e.E;
                                     }
-                                    // TODO- what to do if it DATA (not entry not extern)
+                                    // if DATA (not entry not extern)
+                                    else
+                                    {
+                                        code_u.all_bits |= a_r_e.R;
+                                    }
                                     code_image[i] = code_u.code_w;
                                 }
                                 // for 2 operand address method 2 is not valid
