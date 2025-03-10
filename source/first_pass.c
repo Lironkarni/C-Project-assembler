@@ -333,7 +333,7 @@ void test(int dc, int ic)
     printf("-----------------------------\n");
     while (current)
     {
-        printf("Name: %s| Address: %d| Type: %d\n", current->name, current->address, current->type);
+        printf("Name: %s| Address: %d| Type: %d\n", current->name, current->address + ic, current->type);
         current = current->next;
     }
     printf("-----------------------------\n\n");
@@ -343,7 +343,7 @@ void test(int dc, int ic)
     printf("-----------------------------\n");
     for (int i = 0; i < dc; i++)
     {
-        printf("Address %d: %06X\n", i, data_image[i].data);
+        printf("Address %d: %06X\n", i+ic, data_image[i].data);
     }
     printf("-----------------------------\n");
 
