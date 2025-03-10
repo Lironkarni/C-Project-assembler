@@ -38,6 +38,7 @@ extern Symbol *symbol_table_head;
 int is_valid_label(char *label, Line *line);
 void add_symbol(Line *line, char *name, int instruction_index, int is_code);
 Symbol *find_symbol(char *name);
+void update_symbol_tabel();
 int add_to_ext_ent_list(char *label_name, int type, Line *line);
 
 

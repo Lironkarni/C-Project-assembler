@@ -38,14 +38,11 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
             int inst_index = which_instruction(first_word);
             if (inst_index == TWO) // its entry
             {
+                second_word=get_word(NULL);
                 // need to make sure label is declared already in label list
                 current_symbol = (Symbol *)malloc(sizeof(Symbol));
                 current_symbol = find_symbol(second_word);
-                if (!current_symbol)
-                {
-                    print_system_error(ERROR_CODE_3);
-                    return;
-                }
+               
                 if (current_symbol == NULL)
                 {
                     print_syntax_error(ERROR_CODE_39, line->file_name, line->line_number);
@@ -129,6 +126,9 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                                 if (code_image[i].target_address == 1)
                                 {
                                     printf("adderssing method- 1\n");
+                                    code_u.code_w.target_address=ZERO;
+                                    code_u.code_w.source_address=ZERO;
+
                                     code_u.all_bits = current_symbol->address;
                                     code_u.all_bits <<= THREE_BITS_SHIFT;
                                     if (current_symbol->type == EXTERNAL)
@@ -141,11 +141,15 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                                     }
                                    
                                     code_image[i] = code_u.code_w;
+
+
+                                                            
                                 }
 
                                 else if (code_image[i].target_address == 2)
                                 {
-                                    int num = abs((i - 1) - (current_symbol->address)); // caculate the abs between the addresses
+                                    int num = (current_symbol->address)- (i - 1); // caculate the between the addresses
+
                                     code_u.all_bits=ZERO;
                                     code_u.all_bits = num;
                                     code_u.code_w.funct=ZERO; //why do we need this, why func get value??

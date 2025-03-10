@@ -24,6 +24,10 @@ int first_pass(char *file)
         FOUND_ERROR_IN_FIRST_PASS = 0;
         return 1;
     }
+
+    //update symbol table
+    update_symbol_tabel();
+    test(DC,IC);
     second_pass(file, ext_ent_list_head, symbol_table_head, code_image); // second_pass
     return 0;
 }
@@ -72,7 +76,6 @@ void process_line(char *file)
             first_word = get_word(line->data);
             process_word(line, first_word);
         }
-        test(DC, IC);
     }
     fclose(input_file);
 }
@@ -333,7 +336,7 @@ void test(int dc, int ic)
     printf("-----------------------------\n");
     while (current)
     {
-        printf("Name: %s| Address: %d| Type: %d\n", current->name, current->address + ic, current->type);
+        printf("Name: %s| Address: %d| Type: %d\n", current->name, current->address, current->type);
         current = current->next;
     }
     printf("-----------------------------\n\n");

@@ -71,7 +71,7 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
         symbol_table_head = new_symbol;
         if (instruction_index == EXTERN_INDEX)
         {
-            new_symbol->address = -100; 
+            new_symbol->address = ZERO; 
         }
         else if (is_code)
         {
@@ -122,4 +122,15 @@ int add_to_ext_ent_list(char *label_name, int type, Line *line)
 		ext_ent_list_head=new_label;
 
 		return 0;
+}
+
+void update_symbol_tabel()
+{
+	Symbol *current = symbol_table_head;
+    while (current)
+    {
+        if (current->type!=EXTERNAL && current->type!=-1)
+            current->address+=IC;
+        current = current->next;
+    }
 }
