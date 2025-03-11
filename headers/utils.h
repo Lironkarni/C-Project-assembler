@@ -33,7 +33,6 @@ Macro *find_macro(const char *name);
 void remove_extra_spaces(char *line);
 void pre_assembler(const char *filename);
 char *load_file(char *filename);
-void check_the_file(const char *filename_ad);
 int is_empty_line(const char *line);
 void free_macros(); // פונקציה לשחרור זיכרון של הרשימה המקושרת
 int is_valid_macro_name(char *macro_name , const char *filename , int line);
