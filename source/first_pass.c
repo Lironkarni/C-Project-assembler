@@ -28,7 +28,7 @@ int first_pass(char *file)
     //update symbol table
     update_symbol_tabel();
     test(DC,IC);
-    second_pass(file, ext_ent_list_head, symbol_table_head, code_image); // second_pass
+    second_pass(file, ext_ent_list_head, symbol_table_head, code_image,data_image); // second_pass
     return 0;
 }
 
@@ -330,6 +330,7 @@ int get_string_data(Line *line, int inst_index, char **characters)
 void test(int dc, int ic)
 {
     printf("%d\n", dc);
+    printf("%d\n", ic);
     // הדפסת טבלת הסמלים
     Symbol *current = symbol_table_head;
     printf("Symbol Table:\n");
