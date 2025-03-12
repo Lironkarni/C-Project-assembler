@@ -218,6 +218,7 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
 				print_syntax_error(ERROR_CODE_31, line->file_name, line->line_number);
 				return -1;
 			}
+			ptr++;
 		}
 		char *end_ptr;
 		num_ptr = strtol(ptr, &end_ptr, DECIMAL);
@@ -228,7 +229,7 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
             return -1;
         }
 
-		// ptr++;
+		//ptr++;
 		while (*ptr != SPACE && *ptr != NULL_CHAR)
 		{
 
