@@ -2,12 +2,10 @@
 #include "../headers/globals.h"
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
-#include "../headers/second_pass.h"
 
 int main(int argc, char *argv[]) {
     int i;
     char *as_file;
-    printf("uytr");
     if (argc < MIN_PARAM) {
         // printf("Usage: %s <filename (without extension)>\n", argv[0]);
         print_system_error(ERROR_CODE_1);
@@ -32,10 +30,12 @@ int main(int argc, char *argv[]) {
             // בודקים את הקובץ .am ומייצרים קובץ .temp
             char filename_am[256];
             snprintf(filename_am, sizeof(filename_am), "test-files/%s.am", argv[i]);
-            check_the_file(filename_am);
-            if(first_pass(filename_am))
+            first_pass(filename_am);
+            if (FOUND_ERROR_IN_FIRST_PASS){
+                FOUND_ERROR_IN_FIRST_PASS = 0;
                 continue;
-                          
+            }
+            //second_pass
         } else {
             printf("in main not found\n");
             printf("File %s.as not found.\n", argv[i]);

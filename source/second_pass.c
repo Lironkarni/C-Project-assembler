@@ -3,7 +3,7 @@
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
 
-void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head, code_word *code_image)
+void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
 {
     A_R_E a_r_e = {4, 2, 1};
     FILE *input_file;
@@ -41,7 +41,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
             {
                 second_word = get_word(NULL);
                 // need to make sure label is declared already in label list
-                current_symbol = (Symbol *)malloc(sizeof(Symbol));
+                //current_symbol = (Symbol *)malloc(sizeof(Symbol));
                 current_symbol = find_symbol(second_word);
 
                 if (current_symbol == NULL)
@@ -155,12 +155,16 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
     }
 
     fclose(input_file);
+    printf("test2:\n");
     test(DC, IC);
 
     if (FOUND_ERROR_IN_SECOND_PASS != 0)
     {
         return;
     }
+    make_ent_file(file,current_symbol);
+
+    make_ob_file(file,code_image,IC,data_image,DC);
 
     // need to build the output files
 }
@@ -190,4 +194,101 @@ int check_externs(ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head)
     }
 
     return 0;
+}
+
+void make_ent_file(const char *filename, Symbol *symbol_table_head) {
+    char ent_filename[256];
+    size_t len = strlen(filename);
+
+    if (len > 3 && strcmp(filename + len - 3, ".am") == 0) {
+        strncpy(ent_filename, filename, len - 3); 
+        ent_filename[len - 3] = '\0'; 
+    } else {
+        strncpy(ent_filename, filename, sizeof(ent_filename) - 1);
+        ent_filename[sizeof(ent_filename) - 1] = '\0';
+    }
+
+    strcat(ent_filename, ".ent"); 
+
+    FILE *file = fopen(ent_filename, "w");
+    if (!file) {
+        perror("Error opening .ent file");
+        return;
+    }
+
+    int count = 0;
+    Symbol *current = symbol_table_head;
+    while (current) {
+        if (current->type == 2) {
+            count++;
+        }
+        current = current->next;
+    }
+
+    if (count == 0) { 
+        fclose(file);
+        printf("File %s created successfully, but no entries were written.\n", ent_filename);
+        return;
+    }
+
+    Symbol **symbols = (Symbol **)malloc(count * sizeof(Symbol *));
+    if (!symbols) {
+        perror("Memory allocation failed");
+        fclose(file);
+        return;
+    }
+
+    current = symbol_table_head;
+    int i = 0;
+    while (current) {
+        if (current->type == 2) {
+            symbols[i++] = current;
+        }
+        current = current->next;
+    }
+
+    for (int j = count - 1; j >= 0; j--) {
+        fprintf(file, "%-6s %07d\n", symbols[j]->name, symbols[j]->address);
+    }
+
+    free(symbols);
+    fclose(file);
+    printf("File %s created successfully.\n", ent_filename);
+}
+
+void make_ob_file(const char *filename, code_word *code_image, int ic, data_word *data_image, int dc) {
+    char ob_filename[256];
+    size_t len = strlen(filename);
+
+    if (len > 3 && strcmp(filename + len - 3, ".am") == 0) {
+        strncpy(ob_filename, filename, len - 3);
+        ob_filename[len - 3] = '\0';
+    } else {
+        strncpy(ob_filename, filename, sizeof(ob_filename) - 1);
+        ob_filename[sizeof(ob_filename) - 1] = '\0';
+    }
+
+    strcat(ob_filename, ".ob");
+
+    FILE *file = fopen(ob_filename, "w");
+    if (!file) {
+        perror("Error opening .ob file");
+        return;
+    }
+
+    fprintf(file, "     %d  %d\n", ic-100, dc);
+
+    for (int i = 100; i < ic; i++) {
+        uint32_t full_word = 0;
+        memcpy(&full_word, &code_image[i], 3);
+
+        fprintf(file, "%07d  %06X\n", i, full_word);
+    }
+
+    for (int i = 0; i < dc; i++) {
+        fprintf(file, "%07d  %06X\n", i + ic, data_image[i].data);
+    }
+
+    fclose(file);
+    printf("File %s created successfully.\n", ob_filename);
 }

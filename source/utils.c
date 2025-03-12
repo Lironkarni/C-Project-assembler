@@ -227,40 +227,6 @@ char *load_file(char *filename) {
     return filename_with_extension;
     }
 
-// פונקציה שבודקת את מספר השורות בקובץ .am ויוצרת קובץ .temp עם מספר השורות
-void check_the_file(const char *filename_am)
-{
-    FILE *file = fopen(filename_am, "r");
-    if (!file)
-    {
-        print_system_error(ERROR_CODE_5);
-        return;
-    }
-
-    int line_count = 0;
-    char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file))
-    {
-        line_count++;
-    }
-    fclose(file);
-
-    char filename_ah[256];
-
-    snprintf(filename_ah, sizeof(filename_ah), "%s.ah", filename_am);
-    
-    FILE *file_ah = fopen(filename_ah, "w");
-    if (!file_ah)
-    {
-        print_system_error(ERROR_CODE_6);
-        return;
-    }
-
-    fprintf(file_ah, "Number of lines: %d\n", line_count);
-    fclose(file_ah);
-    
-}
-
 // שחרור הזיכרון של הרשימה המקושרת
 void free_macros() {
     Macro *current = head;
