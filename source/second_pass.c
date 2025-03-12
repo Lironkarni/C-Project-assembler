@@ -8,7 +8,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
     A_R_E a_r_e = {4, 2, 1};
     FILE *input_file;
     char temp_line[MAX_LINE_LEN + 2];
-    int line_number = 0, line_len, word_len, is_label = 0, op_index;
+    int line_number = 0, line_len, word_len, is_label = 0;
     Line *line;
     char *first_word, *second_word;
     Symbol *current_symbol;

@@ -203,11 +203,6 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		}
 		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
 		break;
-
-	default:
-
-		printf("some error\n");
-		break;
 	}
 }
 int which_addressing_method(char *ptr, int op_index, Line *line)
@@ -364,34 +359,34 @@ char *get_word(char *line)
 		current = line;
 	}
 	// got to the end of the row
-	if (*current == '\0')
+	if (*current == NULL_CHAR)
 	{
 		return NULL;
 	}
 	char *word = current;
 	// skip spaces
-	while (*current == ' ')
+	while (*current == SPACE)
 	{
 		current++;
 	}
 	// size of the current word
 	int len = 0;
-	while (current[len] != '\0' && current[len] != ' '  )
+	while (current[len] != NULL_CHAR && current[len] != SPACE)
 	{
 		len++;
-		if (current[len] == ','){
+		if (current[len] == COMMA){
 			len++;
 			break;
 		}
 	}
 	// פסיקים
-	if (current[len] == ' ')  
+	if (current[len] == SPACE)  
 	{
 		int temp = len + 1;
-		while (current[temp] == ' ') 
+		while (current[temp] == SPACE) 
 			temp++;
 
-		if (current[temp] == ',') 
+		if (current[temp] == COMMA) 
 		{
 			len = temp + 1; 
 		}
@@ -405,10 +400,10 @@ char *get_word(char *line)
 		exit(1);
 	}
 	strncpy(word, current, len);
-	word[len] = '\0';
+	word[len] = NULL_CHAR;
 
 	current += len; // put current on next word
-	if (*current == ' ')
+	if (*current == SPACE)
 	{
 		current++;
 	}
