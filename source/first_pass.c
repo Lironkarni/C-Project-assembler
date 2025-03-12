@@ -56,7 +56,7 @@ void process_line(char *file)
                 temp_line[line_len - 1] = NULL_CHAR;
 
             if (line_len > MAX_LINE_LEN)
-                if (temp_line[MAX_LINE_LEN] != '\0' && temp_line[MAX_LINE_LEN] != '\n')
+                if (temp_line[MAX_LINE_LEN] != NULL_CHAR && temp_line[MAX_LINE_LEN] != '\n')
                 {
                     print_syntax_error(ERROR_CODE_8, file, line_number); /*error longer than 80*/
                     while ((c = fgetc(input_file)) != '\n' && c != EOF)
@@ -97,7 +97,7 @@ void process_word(Line *line, char *first_word)
         {
             FOUND_ERROR_IN_FIRST_PASS = 1;
         }
-        first_word[word_len - 1] = '\0';
+        first_word[word_len - 1] = NULL_CHAR;
     }
 
     second_word = is_label ? get_word(NULL) : first_word;

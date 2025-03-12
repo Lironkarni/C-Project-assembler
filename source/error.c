@@ -11,10 +11,10 @@ error errors[]={
     {ERROR_CODE_6, "Error: Unable to open for writing"},
     {ERROR_CODE_7, "Error deleting file"},
     {ERROR_CODE_8, "THE LINE IS TOO LONG, MORE THAN CHARACTERS"},
-    {ERROR_CODE_9, "label name is invalid, cannot be assembly instuction name"},
-    {ERROR_CODE_10, "label name is invalid, label name must start with alphabetic char"},
-    {ERROR_CODE_11, "label name is invalid, more than 31 chars"},
-    {ERROR_CODE_12, "label name is invalid, label should contain alphabetic and digits only"},
+    {ERROR_CODE_9, "LABEL NAME IS INVALID, CANNOT BE ASSEMBLY INSTUCTION NAME"},
+    {ERROR_CODE_10, "LABEL NAME IS INVALID, LABEL NAME MUST START WITH ALPHABETIC CHAR"},
+    {ERROR_CODE_11, "LABEL NAME IS INVALID, MORE THAN 31 CHARS"},
+    {ERROR_CODE_12, "LABEL NAME IS INVALID, LABEL SHOULD CONTAIN ALPHABETIC AND DIGITS ONLY"},
     {ERROR_CODE_13, "MACRO NAME IS INVALID (CANNOT BE AN DIRECTIVE NAME)."},
     {ERROR_CODE_14, "MACRO NAME IS INVALID (CANNOT BE AN INSTRUCTION NAME)."},
     {ERROR_CODE_15, "EXTRA CHARACTERS FOUND IN MACRO OPEN LINE."},
@@ -45,8 +45,6 @@ error errors[]={
     {ERROR_CODE_40, "LABEL IS BEEN USED AS OPERAND BUT DID NOT DECLARED AS A LABEL"},
     {ERROR_CODE_41, "NUMBERS IN DATA INSTRUCTION SHOULD BE INTEGER NUMBERS ONLY (NOT DECIMAL)"},
     {ERROR_CODE_42, "OPERAND OF KIND NUMBER (#) SHOULD BE INTEGER (NOT DECIMAL)"}
-
-
 };
 
 int FOUND_ERROR_IN_PRE_ASSEMBLER = 0;
