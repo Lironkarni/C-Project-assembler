@@ -27,8 +27,9 @@ int first_pass(char *file)
 
     //update symbol table
     update_symbol_tabel();
-    test(DC,IC);
+    // test(DC,IC);
     second_pass(file, ext_ent_list_head, symbol_table_head, code_image); // second_pass
+   
     return 0;
 }
 
@@ -162,6 +163,13 @@ void process_word(Line *line, char *first_word)
 
     else // not instruction. its operation
     {
+        if(first_word[word_len-1]==COMMA)
+        {
+            print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
+            FOUND_ERROR_IN_FIRST_PASS=1;
+            return;
+        }
+
         analyse_operation(line, second_word, is_label, first_word, instruction_index, code_image); // ניתוח הקלט (מספר אופרנדים ושיטת מיעון וכו)
     }
 }
@@ -198,7 +206,8 @@ int get_data(Line *line, int inst_index, int **numbers)
     {
         if (expect_number)
         {
-            if (*data_ptr == '-' || *data_ptr == '+')
+            char *end_ptr;
+            if (*data_ptr == MINUS || *data_ptr == PLUS)
             {
                 if (!isdigit(*(data_ptr + 1)))
                 { // אם אחרי '-' או '+' לא בא מספר - שגיאה
@@ -213,6 +222,13 @@ int get_data(Line *line, int inst_index, int **numbers)
                 free(*numbers);
                 return 1;
             }
+
+            int num=strtol(data_ptr, &end_ptr, DECIMAL);
+            if (*end_ptr == '.') { 
+                print_syntax_error(ERROR_CODE_41, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
             if (count >= capacity)
             {
                 capacity *= 2;
@@ -223,10 +239,10 @@ int get_data(Line *line, int inst_index, int **numbers)
                     exit(1);
                 }
             }
-            (*numbers)[count++] = strtol(data_ptr, &data_ptr, DECIMAL);
+            (*numbers)[count++] = num;
             expect_number = 0; // expecting now a comma
+            data_ptr= end_ptr;
         }
-
         else
         {
             if (*data_ptr != COMMA)
@@ -372,15 +388,15 @@ void test(int dc, int ic)
     }
     printf("-----------------------------\n");
 
-    ext_ent_list *current_ext = ext_ent_list_head;
-    printf("extern entry Table:\n");
-    printf("-----------------------------\n");
-    while (current_ext)
-    {
-        printf("Name: %s| Type: %d| line_number: %d\n", current_ext->label_name, current_ext->type, current_ext->line->line_number);
-        current_ext = current_ext->next;
-    }
-    printf("-----------------------------\n\n");
+    // ext_ent_list *current_ext = ext_ent_list_head;
+    // printf("extern entry Table:\n");
+    // printf("-----------------------------\n");
+    // while (current_ext)
+    // {
+    //     printf("Name: %s| Type: %d| line_number: %d\n", current_ext->label_name, current_ext->type, current_ext->line->line_number);
+    //     current_ext = current_ext->next;
+    // }
+    // printf("-----------------------------\n\n");
 }
 
 void print_bits(uint32_t value, int bits)

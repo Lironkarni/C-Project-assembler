@@ -20,6 +20,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
     }
     else
     {
+        // go through the file and look if there is .entry
         while (fgets(temp_line, sizeof(temp_line), input_file))
         {
             line_number++;
@@ -38,11 +39,11 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
             int inst_index = which_instruction(first_word);
             if (inst_index == TWO) // its entry
             {
-                second_word=get_word(NULL);
+                second_word = get_word(NULL);
                 // need to make sure label is declared already in label list
                 current_symbol = (Symbol *)malloc(sizeof(Symbol));
                 current_symbol = find_symbol(second_word);
-               
+
                 if (current_symbol == NULL)
                 {
                     print_syntax_error(ERROR_CODE_39, line->file_name, line->line_number);
@@ -51,129 +52,117 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                 // add type entry to the label we found in label list
                 current_symbol->type = ENTRY;
             }
+        }
 
-            // check if line has label- if yes, look if label exists in symbol table
+        // check if line has label- if yes, look if label exists in symbol table
+        //  we can go over the code_image list, if line in 0, that means its a label.
+        for (int i = 100; i < IC; i++)
+        {
+            code_union code_u;
+            code_u.code_w = code_image[i];
 
-            else if (op_index = check_if_operation(second_word) != -1) // its operation
+            if (code_image[i].op_code == ZERO && code_image[i].funct == ZERO && code_image[i].A_R_E == ZERO && code_image[i].source_reg == ZERO && code_image[i].target_reg == ZERO)
             {
-                printf("operation in second pass\n");
-
-                // we can go over the code_image list, if line in 0, that means its a label.
-                for (int i = 100; i < IC; i++)
+                // it can be in the line before or 2 before
+                // the line before can be a number for ex- add #6 HELLO
+                if (code_image[i].place == 1)
                 {
-                    code_union code_u;
-                    code_u.code_w = code_image[i];
+                    // need to check if this label is in symbol table
+                    current_symbol = find_symbol(code_image[i].first_operand);
 
-                    if (code_image[i].op_code == ZERO && code_image[i].funct == ZERO && code_image[i].A_R_E == ZERO && code_image[i].source_reg == ZERO && code_image[i].target_reg == ZERO)
+                    if (current_symbol == NULL)
                     {
-                        printf("line is ZERO- %d\n", line->line_number);
-                        printf("first %s\n", code_image[i].first_operand);
-                        printf("second %s\n", code_image[i].second_operand);
-                        // it can be in the line before or 2 before
-                        // the line before can be a number for ex- add #6 HELLO
-                        if (code_image[i].place == 1)
+                        print_syntax_error(ERROR_CODE_40, line->file_name, line->line_number);
+                        FOUND_ERROR_IN_SECOND_PASS = 1;
+                        continue;
+                    }
+                    else
+                    {
+                        // change the row from ZERO to the address of the label, check if extern or internal,
+                        // use address method that we found
+
+                        // need the addressing method of first operand
+                        if (code_image[i].source_address == 1)
                         {
-                            // need to check if this label is in symbol table
-                            current_symbol = find_symbol(code_image[i].first_operand);
-
-                            if (current_symbol == NULL)
+                            code_u.all_bits = current_symbol->address;
+                            code_u.all_bits <<= THREE_BITS_SHIFT;
+                            if (current_symbol->type == EXTERNAL)
                             {
-                                print_syntax_error(ERROR_CODE_40, line->file_name, line->line_number);
-                                FOUND_ERROR_IN_SECOND_PASS = 1;
-                                continue;
+                                code_u.all_bits |= a_r_e.E;
                             }
-                            else
+                            else // if DATA/STRING or entry. not extern
                             {
-                                // change the row from ZERO to the address of the label, check if extern or internal,
-                                // use address method that we found
-
-                                // need the addressing method of first operand
-                                if (code_image[i].source_address == 1)
-                                {
-                                    printf("adderssing method- 1\n");
-                                    code_u.all_bits = current_symbol->address;
-                                    code_u.all_bits <<= THREE_BITS_SHIFT;
-                                    if (current_symbol->type == EXTERNAL)
-                                    {
-                                        code_u.all_bits |= a_r_e.E;
-                                    }
-                                    else  // if DATA/STRING or entry. not extern
-                                    {
-                                        code_u.all_bits |= a_r_e.R;
-                                    }
-                                    code_image[i] = code_u.code_w;
-                                }
-                                // for 2 operand address method 2 is not valid
+                                code_u.all_bits |= a_r_e.R;
                             }
+                            code_image[i] = code_u.code_w;
                         }
-                        else if (code_image[i].place == TWO) // second operand
+                        // for 2 operand address method 2 is not valid
+                    }
+                }
+                else if (code_image[i].place == TWO) // second operand
+                {
+                    // need to check if this label is in symbol table
+                    if (code_image[i].target_address == 2)
+                    {
+                        code_image[i].second_operand += 1;
+                    }
+
+                    current_symbol = find_symbol(code_image[i].second_operand);
+                    if (current_symbol == NULL)
+                    {
+                        print_syntax_error(ERROR_CODE_40, line->file_name, line->line_number);
+                        FOUND_ERROR_IN_SECOND_PASS = 1;
+                        continue;
+                    }
+                    else
+                    {
+                        if (code_image[i].target_address == 1)
                         {
-                            // need to check if this label is in symbol table
-                            if (code_image[i].target_address == 2)
+                            code_u.code_w.target_address = ZERO;
+                            code_u.code_w.source_address = ZERO;
+
+                            code_u.all_bits = current_symbol->address;
+                            code_u.all_bits <<= THREE_BITS_SHIFT;
+                            if (current_symbol->type == EXTERNAL)
                             {
-                                code_image[i].second_operand += 1;
+                                code_u.all_bits |= a_r_e.E;
+                            }
+                            else // if DATA/STRING or entry. not extern
+                            {
+                                code_u.all_bits |= a_r_e.R;
                             }
 
-                            current_symbol = find_symbol(code_image[i].second_operand);
-                            if (current_symbol == NULL)
-                            {
-                                print_syntax_error(ERROR_CODE_40, line->file_name, line->line_number);
-                                FOUND_ERROR_IN_SECOND_PASS = 1;
-                                continue;
-                            }
-                            else
-                            {
-                                if (code_image[i].target_address == 1)
-                                {
-                                    printf("adderssing method- 1\n");
-                                    code_u.code_w.target_address=ZERO;
-                                    code_u.code_w.source_address=ZERO;
+                            code_image[i] = code_u.code_w;
+                        }
 
-                                    code_u.all_bits = current_symbol->address;
-                                    code_u.all_bits <<= THREE_BITS_SHIFT;
-                                    if (current_symbol->type == EXTERNAL)
-                                    {
-                                        code_u.all_bits |= a_r_e.E;
-                                    }
-                                    else  // if DATA/STRING or entry. not extern
-                                    {
-                                        code_u.all_bits |= a_r_e.R;
-                                    }
-                                   
-                                    code_image[i] = code_u.code_w;
+                        else if (code_image[i].target_address == 2)
+                        {
+                            int num = (current_symbol->address) - (i - 1); // caculate the between the addresses
 
+                            code_u.code_w.target_address = ZERO;
+                            code_u.code_w.source_address = ZERO;
+                            code_u.all_bits = ZERO;
+                            code_u.all_bits = num;
+                            code_u.all_bits <<= THREE_BITS_SHIFT;
+                            code_u.all_bits |= a_r_e.A;
 
-                                                            
-                                }
-
-                                else if (code_image[i].target_address == 2)
-                                {
-                                    int num = (current_symbol->address)- (i - 1); // caculate the between the addresses
-
-                                    code_u.all_bits=ZERO;
-                                    code_u.all_bits = num;
-                                    code_u.code_w.funct=ZERO; //why do we need this, why func get value??
-                                    code_u.all_bits <<= THREE_BITS_SHIFT;
-                                    code_u.all_bits |= a_r_e.A;
-
-                                    code_image[i] = code_u.code_w;
-                                }
-                            }
+                            code_image[i] = code_u.code_w;
                         }
                     }
                 }
             }
         }
     }
+
     fclose(input_file);
     test(DC, IC);
 
-    if(FOUND_ERROR_IN_SECOND_PASS!=0)
+    if (FOUND_ERROR_IN_SECOND_PASS != 0)
     {
         return;
     }
 
-    //need to build the output files
+    // need to build the output files
 }
 
 int check_externs(ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head)

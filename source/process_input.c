@@ -151,6 +151,12 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			ptr++;
 		if (*ptr != COMMA && !is_comma) // expected comma
 		{
+			if(*ptr!=SPACE)
+			{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+			}
 			print_syntax_error(ERROR_CODE_33, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
@@ -159,6 +165,12 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			ptr++;
 
 		second_operand = get_word(NULL);
+		if(second_operand==NULL)
+		{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
 		if (second_operand[0] == COMMA)
 		{
 			ptr++;
@@ -212,7 +224,16 @@ int which_addressing_method(char *ptr, int op_index, Line *line)
 				return -1;
 			}
 		}
-		ptr++;
+		char *end_ptr;
+		num_ptr = strtol(ptr, &end_ptr, DECIMAL);
+
+		 // **Check for decimal point**
+		 if (*end_ptr == POINT) {  
+            print_syntax_error(ERROR_CODE_42, line->file_name,line->line_number); // Error: Number must be an integer
+            return -1;
+        }
+
+		// ptr++;
 		while (*ptr != SPACE && *ptr != NULL_CHAR)
 		{
 
