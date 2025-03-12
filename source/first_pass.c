@@ -27,7 +27,7 @@ int first_pass(char *file)
 
     //update symbol table
     update_symbol_tabel();
-    test(DC,IC);
+    //test(DC,IC);
     second_pass(file, ext_ent_list_head, symbol_table_head, code_image,data_image); // second_pass
     return 0;
 }
