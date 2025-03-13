@@ -1,9 +1,7 @@
 #include "../headers/second_pass.h"
-#include "../headers/label.h"
-#include "../headers/error.h"
-#include "../headers/first_pass.h"
 
-void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
+
+void second_pass(char *file, ext_list *ext_list_head,  code_word *code_image,data_word *data_image)
 {
     A_R_E a_r_e = {4, 2, 1};
     FILE *input_file;
@@ -169,126 +167,26 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
     // need to build the output files
 }
 
-int check_externs(ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head)
+int check_externs(ext_list *ext_list_head, int *symbol_table_head, Line *line)
 {
-    ext_ent_list *current_ext = ext_ent_list_head;
-    while (current_ext)
-    {
-        if (current_ext->type == TWO)
-        {
-            current_ext = current_ext->next;
-            continue;
-        }
-        Symbol *current_symbol = symbol_table_head;
-        while (current_symbol)
-        {
-            if (strcmp(current_ext->label_name, current_symbol->name) == 0)
-            {
-                print_syntax_error(ERROR_CODE_38, current_ext->line->file_name, current_ext->line->line_number);
-                return 1;
-            }
-            current_symbol = current_symbol->next;
-        }
+    // ext_list *current_ext = ext_list_head;
+    // while (current_ext)
+    // {
+    //     Symbol *current_symbol = symbol_table_head;
+    //     while (current_symbol)
+    //     {
+    //         if (strcmp(current_ext->label_name, current_symbol->name) == 0)
+    //         {
+    //             print_syntax_error(ERROR_CODE_38, line, current_ext->address);
+    //             return 1;
+    //         }
+    //         current_symbol = current_symbol->next;
+    //     }
 
-        current_ext = current_ext->next;
-    }
+    //     current_ext = current_ext->next;
+    // }
 
     return 0;
 }
 
-void make_ent_file(const char *filename, Symbol *symbol_table_head) {
-    char ent_filename[256];
-    size_t len = strlen(filename);
 
-    if (len > 3 && strcmp(filename + len - 3, ".am") == 0) {
-        strncpy(ent_filename, filename, len - 3); 
-        ent_filename[len - 3] = '\0'; 
-    } else {
-        strncpy(ent_filename, filename, sizeof(ent_filename) - 1);
-        ent_filename[sizeof(ent_filename) - 1] = '\0';
-    }
-
-    strcat(ent_filename, ".ent"); 
-
-    FILE *file = fopen(ent_filename, "w");
-    if (!file) {
-        perror("Error opening .ent file");
-        return;
-    }
-
-    int count = 0;
-    Symbol *current = symbol_table_head;
-    while (current) {
-        if (current->type == 2) {
-            count++;
-        }
-        current = current->next;
-    }
-
-    if (count == 0) { 
-        fclose(file);
-        printf("File %s created successfully, but no entries were written.\n", ent_filename);
-        return;
-    }
-
-    Symbol **symbols = (Symbol **)malloc(count * sizeof(Symbol *));
-    if (!symbols) {
-        perror("Memory allocation failed");
-        fclose(file);
-        return;
-    }
-
-    current = symbol_table_head;
-    int i = 0;
-    while (current) {
-        if (current->type == 2) {
-            symbols[i++] = current;
-        }
-        current = current->next;
-    }
-
-    for (int j = count - 1; j >= 0; j--) {
-        fprintf(file, "%-6s %07d\n", symbols[j]->name, symbols[j]->address);
-    }
-
-    free(symbols);
-    fclose(file);
-    printf("File %s created successfully.\n", ent_filename);
-}
-
-void make_ob_file(const char *filename, code_word *code_image, int ic, data_word *data_image, int dc) {
-    char ob_filename[256];
-    size_t len = strlen(filename);
-
-    if (len > 3 && strcmp(filename + len - 3, ".am") == 0) {
-        strncpy(ob_filename, filename, len - 3);
-        ob_filename[len - 3] = '\0';
-    } else {
-        strncpy(ob_filename, filename, sizeof(ob_filename) - 1);
-        ob_filename[sizeof(ob_filename) - 1] = '\0';
-    }
-
-    strcat(ob_filename, ".ob");
-
-    FILE *file = fopen(ob_filename, "w");
-    if (!file) {
-        perror("Error opening .ob file");
-        return;
-    }
-
-    fprintf(file, "     %d  %d\n", ic-100, dc);
-
-    for (int i = 100; i < ic; i++) {
-        uint32_t full_word = 0;
-        memcpy(&full_word, &code_image[i], 3);
-
-        fprintf(file, "%07d  %06X\n", i, full_word);
-    }
-
-    for (int i = 0; i < dc; i++) {
-        fprintf(file, "%07d  %06X\n", i + ic, data_image[i].data);
-    }
-
-    fclose(file);
-    printf("File %s created successfully.\n", ob_filename);
-}

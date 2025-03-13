@@ -1,20 +1,33 @@
 #ifndef FIRST_PASS_H
 #define FIRST_PASS_H
-#include "../headers/utils.h"
-#include "../headers/process_input.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#include "../headers/error.h"
+#include "../headers/globals.h"
+#include "../headers/line.h"
+#include "../headers/error.h"
+#include "../headers/memory_struct.h"
 #include "../headers/label.h"
-#define INSTRUCTION_COUNT 4
+#include "../headers/op_list.h"
+#include "../headers/second_pass.h"
+#include "../headers/utils.h"
+
+
+
+
+
+static const char *directive_words[] ={"data","string","extern","entry"}; //מילות הנחייה
+static const int directive_count = sizeof(directive_words) / sizeof(directive_words[0]);
 
 
 int first_pass(char *file);
 void process_line(char* file);
 void process_word(Line* line, char* first_word);
-int which_instruction(char *word);
-int get_data(Line *line, int inst_index, int **numbers);
-int get_string_data( Line *line, int inst_index, char **string_value);
-
-void test(int dc, int ic);
-void print_bits(uint32_t value, int bits);
-
+int which_addressing_method(char *ptr, int op_index, Line *line);
+void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image);
+int add_to_ext_list(char *label_name, int address);
 
 #endif

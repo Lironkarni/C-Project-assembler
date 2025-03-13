@@ -1,6 +1,8 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#include <stdio.h>
+
 typedef struct error
 {
 	int err_code;

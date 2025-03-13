@@ -4,6 +4,16 @@
 #include <string.h>
 #include <stdlib.h>
 
+
+#include "../headers/error.h"
+#include "../headers/line.h"
+#include "../headers/label.h"
+#include "../headers/op_list.h"
+#include "../headers/memory_struct.h"
+#include "../headers/label.h"
+#include "../headers/error.h"
+
+
 //מספר רגיסטרים
 #define NUM_OF_REG 8
 //גודל מילה\רגיסטר
@@ -12,6 +22,12 @@
 #define MEM_SIZE 2097151
 //אורך מקסימלי של שורה בקובץ המקור
 #define MAX_LINE_LEN 80
+
+#define MAX_LABEL_LENGTH 31
+
+#define SUM_OPERATIONS 16
+
+#define INSTRUCTION_COUNT 4
 
 /*minimum parameters the program needs to start*/
 #define MIN_PARAM 2
