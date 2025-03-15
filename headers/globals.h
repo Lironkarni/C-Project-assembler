@@ -19,6 +19,7 @@
 /*initial capacity for size of array of numbers (.data)*/
 #define INIT_CAPACITY 10
 
+#define INIT_MEMORY 100
 #define COMMENT ';'
 #define COLON ':'
 #define QUOTE '"'

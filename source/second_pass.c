@@ -56,7 +56,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
 
         // check if line has label- if yes, look if label exists in symbol table
         //  we can go over the code_image list, if line in 0, that means its a label.
-        for (int i = 100; i < IC; i++)
+        for (int i = INIT_MEMORY; i < IC; i++)
         {
             code_union code_u;
             code_u.code_w = code_image[i];
@@ -165,8 +165,6 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
     make_ent_file(file,current_symbol);
 
     make_ob_file(file,code_image,IC,data_image,DC);
-
-    // need to build the output files
 }
 
 int check_externs(ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head)
@@ -212,7 +210,7 @@ void make_ent_file(const char *filename, Symbol *symbol_table_head) {
 
     FILE *file = fopen(ent_filename, "w");
     if (!file) {
-        perror("Error opening .ent file");
+        print_system_error(ERROR_CODE_4);
         return;
     }
 
@@ -233,7 +231,7 @@ void make_ent_file(const char *filename, Symbol *symbol_table_head) {
 
     Symbol **symbols = (Symbol **)malloc(count * sizeof(Symbol *));
     if (!symbols) {
-        perror("Memory allocation failed");
+        print_system_error(ERROR_CODE_3);
         fclose(file);
         return;
     }
@@ -272,13 +270,13 @@ void make_ob_file(const char *filename, code_word *code_image, int ic, data_word
 
     FILE *file = fopen(ob_filename, "w");
     if (!file) {
-        perror("Error opening .ob file");
+        print_system_error(ERROR_CODE_4);
         return;
     }
 
-    fprintf(file, "     %d  %d\n", ic-100, dc);
+    fprintf(file, "     %d  %d\n", ic-INIT_MEMORY, dc);
 
-    for (int i = 100; i < ic; i++) {
+    for (int i = INIT_MEMORY; i < ic; i++) {
         uint32_t full_word = 0;
         memcpy(&full_word, &code_image[i], 3);
 
