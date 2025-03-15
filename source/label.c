@@ -1,5 +1,10 @@
 #include "../headers/label.h"
 
+char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
+
+Symbol *symbol_table_head = NULL;
+
+
 int is_valid_label(char *label, Line *line)
 {
 	/*check its starts with alphbetic char
@@ -88,6 +93,7 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
         return;
     }
 }
+
 Symbol *find_symbol(char *name)
 {
     Symbol *current = symbol_table_head;
@@ -98,30 +104,6 @@ Symbol *find_symbol(char *name)
         current = current->next;
     }
     return NULL;
-}
-
-int add_to_ext_ent_list(char *label_name, int type, Line *line)
-{
-	//ext_ent_list *current= ext_ent_list_head;
-	ext_ent_list *new_label = (ext_ent_list *)malloc(sizeof(ext_ent_list));
-        if (!new_label)
-        {
-            print_system_error(ERROR_CODE_3);
-            return 1;
-        }
-		new_label->label_name = malloc(strlen(label_name) + 1);
-		if (!new_label->label_name) {
-			free(new_label); // Free the struct to prevent memory leaks
-			print_system_error(ERROR_CODE_3);
-			return 1;
-		}
-		strcpy(new_label->label_name, label_name);
-		new_label->type=type;
-		new_label->line=line;
-		new_label->next=ext_ent_list_head;
-		ext_ent_list_head=new_label;
-
-		return 0;
 }
 
 void update_symbol_tabel()

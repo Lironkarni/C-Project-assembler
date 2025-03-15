@@ -1,19 +1,5 @@
-#include "../headers/globals.h"
-#include "../headers/utils.h"
-#include "../headers/error.h"
 #include "../headers/first_pass.h"
-#include "../headers/process_input.h"
-#include "../headers/memory_struct.h"
-#include "../headers/label.h"
-#include "../headers/second_pass.h"
 
-code_word code_image[MEM_SIZE];
-data_word data_image[MEM_SIZE];
-
-char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
-
-Symbol *symbol_table_head = NULL;
-ext_ent_list *ext_ent_list_head = NULL;
 
 /*start the first pass*/
 int first_pass(char *file)
@@ -28,7 +14,7 @@ int first_pass(char *file)
     //update symbol table
     update_symbol_tabel();
     //test(DC,IC);
-    second_pass(file, ext_ent_list_head, symbol_table_head, code_image,data_image); // second_pass
+    second_pass(file, ext_list_head, 0, code_image,data_image); // second_pass
     // test(DC,IC);   
     return 0;
 }
@@ -139,7 +125,7 @@ void process_word(Line *line, char *first_word)
             break;
         case 2: // entry
             second_word = get_word(NULL);
-            add_to_ext_ent_list(second_word, ENTRY, line);
+            add_to_ext_list(second_word, line->line_number);
             if (is_label)
             {
                 printf("WARNING: label is ignored in entry line\n");
@@ -147,7 +133,7 @@ void process_word(Line *line, char *first_word)
             break; // handle in second pass
         case 3:    // extern
             second_word = get_word(NULL);
-            add_to_ext_ent_list(second_word, EXTERNAL, line);
+            add_to_ext_list(second_word, line->line_number);
             if (is_label)
             {
                 printf("WARNING: label is ignored in extern line\n");
@@ -174,236 +160,287 @@ void process_word(Line *line, char *first_word)
     }
 }
 
-int which_instruction(char *word)
+int which_addressing_method(char *ptr, int op_index, Line *line)
 {
-    int i;
-    for (i = 0; i < INSTRUCTION_COUNT; i++)
-    {
-        if (strcmp(word, instruction_list[i]) == 0)
-            return i;
-    }
-    return -1;
-}
+	long num_ptr;
+	if (*ptr == NUMBER_SIGN) // if start with #
+	{
+		ptr++;
+		if (*ptr == MINUS || *ptr == PLUS)
+		{
+			if (!isdigit(*(ptr + 1)))
+			{ // אם אחרי '-' או '+' לא בא מספר - שגיאה
+				print_syntax_error(ERROR_CODE_31, line->file_name, line->line_number);
+				return -1;
+			}
+			ptr++;
+		}
+		char *end_ptr;
+		num_ptr = strtol(ptr, &end_ptr, DECIMAL);
 
-/*this function get the data if its ".data", and check if its valid or there are errors*/
-int get_data(Line *line, int inst_index, int **numbers)
-{
-    int expect_number = 1; // 0- expect number, 1- expect comma
-    int capacity, count = 0;
-    char *data_ptr = strstr(line->data, instruction_list[inst_index]);
-    data_ptr += strlen(instruction_list[inst_index]);
-    while (*data_ptr == ' ')
-        data_ptr++;
-
-    capacity = INIT_CAPACITY;
-    *numbers = (int *)malloc(capacity * sizeof(int));
-    if (*numbers == NULL)
-    {
-        print_system_error(ERROR_CODE_3);
-        exit(1);
-    }
-    while (*data_ptr != NULL_CHAR)
-    {
-        if (expect_number)
-        {
-            char *end_ptr;
-            if (*data_ptr == MINUS || *data_ptr == PLUS)
-            {
-                if (!isdigit(*(data_ptr + 1)))
-                { // אם אחרי '-' או '+' לא בא מספר - שגיאה
-                    print_syntax_error(22, line->file_name, line->line_number);
-                    free(*numbers);
-                    return 1;
-                }
-            }
-            else if (!isdigit(*data_ptr))
-            {
-                print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
-                free(*numbers);
-                return 1;
-            }
-
-            int num=strtol(data_ptr, &end_ptr, DECIMAL);
-            if (*end_ptr == '.') { 
-                print_syntax_error(ERROR_CODE_41, line->file_name, line->line_number);
-                free(*numbers);
-                return 1;
-            }
-            if (count >= capacity)
-            {
-                capacity *= 2;
-                *numbers = (int *)realloc(*numbers, capacity * sizeof(int));
-                if (*numbers == NULL)
-                {
-                    print_system_error(ERROR_CODE_3);
-                    exit(1);
-                }
-            }
-            (*numbers)[count++] = num;
-            expect_number = 0; // expecting now a comma
-            data_ptr= end_ptr;
+		 // **Check for decimal point**
+		 if (*end_ptr == POINT) {  
+            print_syntax_error(ERROR_CODE_42, line->file_name,line->line_number); // Error: Number must be an integer
+            return -1;
         }
-        else
+
+		//ptr++;
+		while (*ptr != SPACE && *ptr != NULL_CHAR)
+		{
+
+			if (!isdigit(*ptr++))
+			{
+				print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+				return -1;
+			}
+		}
+		num_ptr = strtol(ptr, NULL, DECIMAL);
+		if (num_ptr < MIN_21BIT || num_ptr > MAX_21BIT)
+		{
+			print_syntax_error(ERROR_CODE_36, line->file_name, line->line_number);
+			return -1;
+		}
+		return IMMEDIATE;
+	}
+	if (is_register(ptr)) // check if register
+	{
+		return DIRECT_REGISTER;
+	}
+
+	if (*ptr == AMPERSAND) //&next
+	{
+		// next word after & must be label that defined or will be define later
+		if (is_valid_label(ptr+1, line))
+			return -1;
+
+		// this is used only for this operations: jmp, bne, jsr
+		if (op_index != 9 && op_index != 10 && op_index != 11)
+		{
+			print_syntax_error(ERROR_CODE_32, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return -1;
+		}
+
+		return RELATIVE; // יחסי
+	}
+	if (!is_valid_label(ptr, line)) //  אם המילה הבאה אחרי הפעולה זה תווית שהוגדרה או תוגדר בהמשך
+	{
+		return DIRECT;
+	}
+	else // המילה היא לא אף אחת מהאפשרויות הנל- ז"א שיש שגיאה
+	{
+		return -1;
+	}
+}
+
+
+void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image)
+{
+	int num_args, is_code = 0, op_index, address_method_src, address_method_des, len, is_comma = 0;
+	char *first_operand, *second_operand, *ptr;
+	if (is_label)
+		op_index = check_if_operation(second_word);
+	else
+		op_index = check_if_operation(first_word);
+
+	if (op_index != -1) // אם זו פקודה מוכרת של אסמבלי
+	{
+		is_code = 1;
+		if (is_label) // אם לפני כן הייתה תווית נוסיף לטבלת הסמלים
+		{
+			add_symbol(line, first_word, instruction_index, is_code);
+		}
+	}
+	else // זה לא פקודה מוכרת
+	{
+		print_syntax_error(ERROR_CODE_25, line->file_name, line->line_number);
+		FOUND_ERROR_IN_FIRST_PASS = 1;
+		return;
+	}
+
+	num_args = operation_list[op_index].address_method.num_args; // מספר האופרנדים של הפקודה
+
+	ptr = strstr(line->data, operation_list[op_index].operation_name);
+	ptr += strlen(operation_list[op_index].operation_name);
+	while (*ptr == SPACE) // דילוג על רווחים
+		ptr++;
+
+	switch (num_args)
+	{
+	case 0:
+		if (*ptr != NULL_CHAR) // extra chars after end of command
+		{
+			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		add_to_code_image(code_image, line, num_args, operation_list[op_index].opcode,ZERO, ZERO,ZERO, NULL,NULL);
+		return;
+
+	case 1:
+		if (*ptr == NULL_CHAR) // missing operand
+		{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		while (*ptr && isspace(*ptr)) /* Skipping whitespace */
+			ptr++;
+		if (*ptr == COMMA) // פסיק לא חוקי בין הוראה לאופרנד הראשון
+		{
+			print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		if (strchr(ptr, COMMA) != NULL) // אם יש פסיק נוסף בפקודה
+		{
+			print_syntax_error(ERROR_CODE_29, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+
+		second_operand = get_word(NULL);
+		len = strlen(second_operand);
+		if (second_operand[len - 1] == COMMA)
+		{
+			print_syntax_error(ERROR_CODE_35, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		/*need to check if addressing method is legal*/
+		address_method_des = which_addressing_method(second_operand, op_index, line);
+		if (address_method_des == -1)
+			return; // there was error. no need to keep analysing this line
+
+		ptr += len;
+		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
+		{
+			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		// check if the method is legal
+		if (is_legal_method(line, address_method_des, op_index, num_args))
+		{
+			return;
+		}
+
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
+
+		return;
+	case 2:
+		if (*ptr == NULL_CHAR) // missing operand
+		{
+			print_syntax_error(ERROR_CODE_30, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		if (*ptr == COMMA) // פסיק לא חוקי בין הוראה לאופרנד הראשון
+		{
+			print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		first_operand = get_word(NULL);
+		len = strlen(first_operand);
+		if (first_operand[len - 1] == COMMA)
+		{
+			is_comma = 1;
+			first_operand[len - 1] = NULL_CHAR; // need to word w/o the comma
+		}
+		address_method_src = which_addressing_method(first_operand, op_index, line);
+		if (address_method_src == -1)
+		{
+			return;
+		}
+		ptr += len;
+
+		while (*ptr == SPACE) // דילוג על רווחים
+			ptr++;
+		if (*ptr != COMMA && !is_comma) // expected comma
+		{
+			if(*ptr!=SPACE)
+			{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+			}
+			print_syntax_error(ERROR_CODE_33, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		while (*ptr == SPACE) // דילוג על רווחים
+			ptr++;
+
+		second_operand = get_word(NULL);
+		if(second_operand==NULL)
+		{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		if (second_operand[0] == COMMA)
+		{
+			ptr++;
+			second_operand += 1;
+		}
+
+		len = strlen(second_operand);
+		if (second_operand[len - 1] == COMMA)
+		{
+			print_syntax_error(ERROR_CODE_35, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		address_method_des = which_addressing_method(second_operand, op_index, line);
+		if (address_method_des == -1)
+		{
+			return;
+		}
+		ptr += len;
+		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
+		{
+			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		// check if the method is legal
+		if (is_legal_method(line, address_method_des, op_index - 1, num_args) || is_legal_method(line, address_method_src, op_index, num_args))
+		{
+			return;
+		}
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
+		break;
+	}
+}
+
+
+
+
+int add_to_ext_list(char *label_name, int address)
+{
+	//ext_list *current= ext_list_head;
+	ext_list *new_label = (ext_list *)malloc(sizeof(ext_list));
+        if (!new_label)
         {
-            if (*data_ptr != COMMA)
-            {
-                print_syntax_error(ERROR_CODE_23, line->file_name, line->line_number);
-                free(*numbers);
-                return 1;
-            }
-            expect_number = 1;
-            data_ptr++;
+            print_system_error(ERROR_CODE_3);
+            return 1;
         }
-        while (*data_ptr == SPACE)
-            data_ptr++;
-    }
-    // check if line ended with comma
-    if (expect_number)
-    {
-        print_syntax_error(ERROR_CODE_24, line->file_name, line->line_number);
-        free(*numbers);
-        return 1;
-    }
-    (*numbers)[count] = NULL_CHAR;
-    return 0;
+		new_label->label_name = malloc(strlen(label_name) + 1);
+		if (!new_label->label_name) {
+			free(new_label); // Free the struct to prevent memory leaks
+			print_system_error(ERROR_CODE_3);
+			return 1;
+		}
+		strcpy(new_label->label_name, label_name);
+		new_label->address=address;
+		new_label->next=ext_list_head;
+		ext_list_head=new_label;
+
+		return 0;
 }
 
-int get_string_data(Line *line, int inst_index, char **characters)
-{
-    int capacity = INIT_CAPACITY, length = 0;
-    char *char_array;
-    char *data_ptr = strstr(line->data, instruction_list[inst_index]);
 
-    if (!data_ptr)
-    {
-        print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
-        return 1;
-    }
 
-    data_ptr += strlen(instruction_list[inst_index]);
 
-    while (*data_ptr == SPACE) // דילוג על רווחים
-        data_ptr++;
 
-    if (*data_ptr != QUOTE)
-    { // אם המחרוזת לא מתחילה בגרשיים - שגיאה
-        print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
-        return 1;
-    }
-
-    data_ptr++; // מעבר אחרי המרכאה הפותחת
-
-    char_array = (char *)malloc(capacity * sizeof(char));
-    if (!char_array)
-    {
-        print_system_error(ERROR_CODE_3);
-        exit(1);
-    }
-
-    // קריאת המחרוזת עד המרכאה הסוגרת
-    while (*data_ptr && *data_ptr != QUOTE)
-    {
-        if (length >= capacity)
-        {
-            capacity *= 2;
-            char_array = (char *)realloc(char_array, capacity * sizeof(char));
-            if (!char_array)
-            {
-                print_system_error(ERROR_CODE_3);
-                exit(1);
-            }
-        }
-        char_array[length++] = *data_ptr++;
-    }
-
-    if (*data_ptr != QUOTE)
-    { // אם אין מרכאה סוגרת - שגיאה
-        print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
-        free(char_array);
-        return 1;
-    }
-
-    char_array[length] = NULL_CHAR; // סימון סוף מחרוזת
-    *characters = char_array;
-
-    data_ptr++; // מעבר אחרי המרכאה הסוגרת
-
-    // דילוג על רווחים אחרי המחרוזת
-    while (*data_ptr == SPACE)
-        data_ptr++;
-
-    // אם יש עוד תווים אחרי המחרוזת - שגיאה
-    if (*data_ptr != NULL_CHAR)
-    {
-        print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
-        free(char_array);
-        return 1;
-    }
-
-    return 0; // הצלחה
-}
-
-void test(int dc, int ic)
-{
-    printf("%d\n", dc);
-    printf("%d\n", ic);
-    // הדפסת טבלת הסמלים
-    Symbol *current = symbol_table_head;
-    printf("Symbol Table:\n");
-    printf("-----------------------------\n");
-    while (current)
-    {
-        printf("Name: %s| Address: %d| Type: %d\n", current->name, current->address, current->type);
-        current = current->next;
-    }
-    printf("-----------------------------\n\n");
-
-    // הדפסת תמונת הנתונים
-    printf("Data Image:\n");
-    printf("-----------------------------\n");
-    for (int i = 0; i < dc; i++)
-    {
-        printf("Address %d: %06X\n", i+ic, data_image[i].data);
-    }
-    printf("-----------------------------\n");
-
-    printf("Code Image\n");
-    printf("%d\n", ic);
-    // הדפסת תמונת הקוד
-    for (int i = 100; i < ic; i++)
-    {
-        // בניית 24 ביטים מהמבנה
-        // uint32_t full_word = (code_image[i].op_code << 18) |
-        //                      (code_image[i].source_address << 16) |
-        //                      (code_image[i].source_reg << 13) |
-        //                      (code_image[i].target_address << 11) |
-        //                      (code_image[i].target_reg << 8) |
-        //                      (code_image[i].funct << 3) |
-        //                      (code_image[i].A_R_E);
-        uint32_t full_word = 0;
-        memcpy(&full_word, &code_image[i], 3); // מעתיקים רק 3 בתים (24 ביטים)
-
-        printf("Address %d: ", i);
-        print_bits(full_word, 24); // הדפסת כל הביטים
-        printf(" (0x%06X)\n", full_word);
-    }
-    printf("-----------------------------\n");
-
-    // ext_ent_list *current_ext = ext_ent_list_head;
-    // printf("extern entry Table:\n");
-    // printf("-----------------------------\n");
-    // while (current_ext)
-    // {
-    //     printf("Name: %s| Type: %d| line_number: %d\n", current_ext->label_name, current_ext->type, current_ext->line->line_number);
-    //     current_ext = current_ext->next;
-    // }
-    // printf("-----------------------------\n\n");
-}
-
-void print_bits(uint32_t value, int bits)
-{
-    for (int i = bits - 1; i >= 0; i--)
-    {
-        printf("%d", (value >> i) & 1);
-    }
-}
