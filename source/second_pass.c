@@ -3,7 +3,7 @@
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
 
-void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
+void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
 {
     A_R_E a_r_e = {4, 2, 1};
     FILE *input_file;
@@ -62,7 +62,7 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
             code_u.code_w = code_image[i];
 
             if (code_image[i].op_code == ZERO && code_image[i].funct == ZERO && code_image[i].A_R_E == ZERO && code_image[i].source_reg == ZERO && code_image[i].target_reg == ZERO)
-            {
+            {                
                 // it can be in the line before or 2 before
                 // the line before can be a number for ex- add #6 HELLO
                 if (code_image[i].place == 1)
@@ -78,6 +78,10 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                     }
                     else
                     {
+                        //check if this label was declared as extern
+                        check_externs(ext_list_head, code_image[i].first_operand, line);
+ 
+                        
                         // change the row from ZERO to the address of the label, check if extern or internal,
                         // use address method that we found
 
@@ -116,6 +120,9 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
                     }
                     else
                     {
+                        //check ig this label was declared as extern
+                        check_externs(ext_list_head, code_image[i].second_operand, line);
+                       
                         if (code_image[i].target_address == 1)
                         {
                             code_u.code_w.target_address = ZERO;
@@ -164,34 +171,31 @@ void second_pass(char *file, ext_ent_list *ext_ent_list_head, Symbol *symbol_tab
     }
     make_ent_file(file,current_symbol);
 
-    make_ob_file(file,code_image,IC,data_image,DC);
+    make_ext_file(file,current_ext);
+
+    make_ob_file(file,code_image,IC,data_image,DC);    
 }
 
-int check_externs(ext_ent_list *ext_ent_list_head, Symbol *symbol_table_head)
+void check_externs(ext_list *ext_list_head, char operand_name, Line *line)
 {
-    ext_ent_list *current_ext = ext_ent_list_head;
+    ext_list *current_ext;
+    current_ext = ext_list_head;
     while (current_ext)
     {
-        if (current_ext->type == TWO)
+        if(strcmp(current_ext->label_name, operand_name)==0)
         {
-            current_ext = current_ext->next;
-            continue;
-        }
-        Symbol *current_symbol = symbol_table_head;
-        while (current_symbol)
-        {
-            if (strcmp(current_ext->label_name, current_symbol->name) == 0)
+            if(current_ext->address)
             {
-                print_syntax_error(ERROR_CODE_38, current_ext->line->file_name, current_ext->line->line_number);
-                return 1;
+                add_to_ext_list(ext_list_head,current_ext->label_name,line->line_number);
+                return;
             }
-            current_symbol = current_symbol->next;
+            else{
+                current_ext->address=line->line_number;
+                return;
+            }
         }
-
-        current_ext = current_ext->next;
+        current_ext=current_ext->next;
     }
-
-    return 0;
 }
 
 void make_ent_file(const char *filename, Symbol *symbol_table_head) {

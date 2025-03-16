@@ -23,15 +23,12 @@ typedef struct symbol {
     struct symbol *next;           
 } Symbol;
 
-typedef struct ext_ent_list
+typedef struct ext_list
 {
 	char *label_name;
-	guide_type type;
-	Line *line;
-	struct ext_ent_list *next;
-}ext_ent_list;
-
-extern ext_ent_list *ext_ent_list_head;
+	int address;
+	struct ext_list *next;
+}ext_list;
 
 extern Symbol *symbol_table_head;
 
@@ -39,7 +36,6 @@ int is_valid_label(char *label, Line *line);
 void add_symbol(Line *line, char *name, int instruction_index, int is_code);
 Symbol *find_symbol(char *name);
 void update_symbol_tabel();
-int add_to_ext_ent_list(char *label_name, int type, Line *line);
-
+int add_to_ext_list(ext_list *ext_list_head, char *label_name, int address);
 
 #endif

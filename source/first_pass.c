@@ -13,7 +13,8 @@ data_word data_image[MEM_SIZE];
 char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 
 Symbol *symbol_table_head = NULL;
-ext_ent_list *ext_ent_list_head = NULL;
+ext_list *ext_list_head=NULL;
+
 
 /*start the first pass*/
 int first_pass(char *file)
@@ -28,7 +29,7 @@ int first_pass(char *file)
     //update symbol table
     update_symbol_tabel();
     //test(DC,IC);
-    second_pass(file, ext_ent_list_head, symbol_table_head, code_image,data_image); // second_pass
+    second_pass(file, ext_list_head, symbol_table_head, code_image,data_image); // second_pass
     // test(DC,IC);   
     return 0;
 }
@@ -139,7 +140,6 @@ void process_word(Line *line, char *first_word)
             break;
         case 2: // entry
             second_word = get_word(NULL);
-            add_to_ext_ent_list(second_word, ENTRY, line);
             if (is_label)
             {
                 printf("WARNING: label is ignored in entry line\n");
@@ -147,7 +147,7 @@ void process_word(Line *line, char *first_word)
             break; // handle in second pass
         case 3:    // extern
             second_word = get_word(NULL);
-            add_to_ext_ent_list(second_word, EXTERNAL, line);
+            add_to_ext_list(ext_list_head,second_word, ZERO);
             if (is_label)
             {
                 printf("WARNING: label is ignored in extern line\n");

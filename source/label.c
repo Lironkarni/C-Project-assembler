@@ -100,10 +100,10 @@ Symbol *find_symbol(char *name)
     return NULL;
 }
 
-int add_to_ext_ent_list(char *label_name, int type, Line *line)
+int add_to_ext_list(ext_list *ext_list_head, char *label_name)
 {
 	//ext_ent_list *current= ext_ent_list_head;
-	ext_ent_list *new_label = (ext_ent_list *)malloc(sizeof(ext_ent_list));
+	ext_list *new_label = (ext_list *)malloc(sizeof(ext_list));
         if (!new_label)
         {
             print_system_error(ERROR_CODE_3);
@@ -116,10 +116,8 @@ int add_to_ext_ent_list(char *label_name, int type, Line *line)
 			return 1;
 		}
 		strcpy(new_label->label_name, label_name);
-		new_label->type=type;
-		new_label->line=line;
-		new_label->next=ext_ent_list_head;
-		ext_ent_list_head=new_label;
+		new_label->next=ext_list_head;
+		ext_list_head=new_label;
 
 		return 0;
 }
