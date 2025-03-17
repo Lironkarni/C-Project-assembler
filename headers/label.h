@@ -3,6 +3,7 @@
 #include "../headers/utils.h"
 #include "../headers/error.h"
 #include "../headers/process_input.h"
+#include "../headers/first_pass.h"
 
 #define MAX_LABEL_LENGTH 31
 
@@ -31,11 +32,13 @@ typedef struct ext_list
 }ext_list;
 
 extern Symbol *symbol_table_head;
+extern ext_list *ext_table_head;
+
 
 int is_valid_label(char *label, Line *line);
 void add_symbol(Line *line, char *name, int instruction_index, int is_code);
 Symbol *find_symbol(char *name);
 void update_symbol_tabel();
-int add_to_ext_list(ext_list *ext_list_head, char *label_name, int address);
+int add_to_ext_list(char *label_name, int address);
 
 #endif

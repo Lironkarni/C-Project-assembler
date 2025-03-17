@@ -1,5 +1,6 @@
 #include "../headers/label.h"
 
+
 int is_valid_label(char *label, Line *line)
 {
 	/*check its starts with alphbetic char
@@ -100,7 +101,7 @@ Symbol *find_symbol(char *name)
     return NULL;
 }
 
-int add_to_ext_list(ext_list *ext_list_head, char *label_name)
+int add_to_ext_list(char *label_name, int address)
 {
 	//ext_ent_list *current= ext_ent_list_head;
 	ext_list *new_label = (ext_list *)malloc(sizeof(ext_list));
@@ -116,8 +117,9 @@ int add_to_ext_list(ext_list *ext_list_head, char *label_name)
 			return 1;
 		}
 		strcpy(new_label->label_name, label_name);
-		new_label->next=ext_list_head;
-		ext_list_head=new_label;
+		new_label->address=address;
+		new_label->next=ext_table_head;
+		ext_table_head=new_label;
 
 		return 0;
 }

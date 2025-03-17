@@ -3,12 +3,12 @@
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
 
-void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
+void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
 {
     A_R_E a_r_e = {4, 2, 1};
     FILE *input_file;
     char temp_line[MAX_LINE_LEN + 2];
-    int line_number = 0, line_len, word_len, is_label = 0;
+    int line_number = 0, line_len, word_len, is_label = 0, has_externs=0, has_entry=0;
     Line *line;
     char *first_word, *second_word;
     Symbol *current_symbol;
@@ -51,6 +51,7 @@ void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head,
                 }
                 // add type entry to the label we found in label list
                 current_symbol->type = ENTRY;
+                has_entry=1;
             }
         }
 
@@ -62,7 +63,7 @@ void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head,
             code_u.code_w = code_image[i];
 
             if (code_image[i].op_code == ZERO && code_image[i].funct == ZERO && code_image[i].A_R_E == ZERO && code_image[i].source_reg == ZERO && code_image[i].target_reg == ZERO)
-            {                
+            {             
                 // it can be in the line before or 2 before
                 // the line before can be a number for ex- add #6 HELLO
                 if (code_image[i].place == 1)
@@ -78,10 +79,6 @@ void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head,
                     }
                     else
                     {
-                        //check if this label was declared as extern
-                        check_externs(ext_list_head, code_image[i].first_operand, line);
- 
-                        
                         // change the row from ZERO to the address of the label, check if extern or internal,
                         // use address method that we found
 
@@ -92,6 +89,8 @@ void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head,
                             code_u.all_bits <<= THREE_BITS_SHIFT;
                             if (current_symbol->type == EXTERNAL)
                             {
+                                add_to_ext_list(code_image[i].first_operand, i);
+                                has_externs=1;
                                 code_u.all_bits |= a_r_e.E;
                             }
                             else // if DATA/STRING or entry. not extern
@@ -120,9 +119,6 @@ void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head,
                     }
                     else
                     {
-                        //check ig this label was declared as extern
-                        check_externs(ext_list_head, code_image[i].second_operand, line);
-                       
                         if (code_image[i].target_address == 1)
                         {
                             code_u.code_w.target_address = ZERO;
@@ -132,6 +128,8 @@ void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head,
                             code_u.all_bits <<= THREE_BITS_SHIFT;
                             if (current_symbol->type == EXTERNAL)
                             {
+                                add_to_ext_list(code_image[i].second_operand, i);
+                                has_externs=1;
                                 code_u.all_bits |= a_r_e.E;
                             }
                             else // if DATA/STRING or entry. not extern
@@ -169,33 +167,63 @@ void second_pass(char *file, ext_list *ext_list_head, Symbol *symbol_table_head,
     {
         return;
     }
-    make_ent_file(file,current_symbol);
+    if(has_entry){
+        make_ent_file(file,current_symbol);
+    }
 
-    make_ext_file(file,current_ext);
+    if(has_externs){
+        make_ext_file(file,ext_table_head);
+    }
 
     make_ob_file(file,code_image,IC,data_image,DC);    
 }
 
-void check_externs(ext_list *ext_list_head, char operand_name, Line *line)
-{
-    ext_list *current_ext;
-    current_ext = ext_list_head;
-    while (current_ext)
-    {
-        if(strcmp(current_ext->label_name, operand_name)==0)
-        {
-            if(current_ext->address)
-            {
-                add_to_ext_list(ext_list_head,current_ext->label_name,line->line_number);
-                return;
-            }
-            else{
-                current_ext->address=line->line_number;
-                return;
-            }
-        }
-        current_ext=current_ext->next;
+void make_ext_file(const char *filename, ext_list *ext_table_head) {
+    ext_list *current;
+    char ext_filename[256];
+    size_t len = strlen(filename);
+    if (len > 3 && strcmp(filename + len - 3, ".am") == 0) {
+        strncpy(ext_filename, filename, len - 3); 
+        ext_filename[len - 3] = '\0'; 
+    } else {
+        strncpy(ext_filename, filename, sizeof(ext_filename) - 1);
+        ext_filename[sizeof(ext_filename) - 1] = '\0';
     }
+    strcat(ext_filename, ".ext"); 
+
+    FILE *file = fopen(ext_filename, "w");
+    if (!file) {
+        print_system_error(ERROR_CODE_4);
+        return;
+    }
+    int count = 0;
+    while (current) {
+            count++;
+        current = current->next;
+    }
+
+    ext_list **externals = (ext_list **)malloc(count * sizeof(ext_list *));
+    if (!externals) {
+        print_system_error(ERROR_CODE_3);
+        fclose(file);
+        return;
+    }
+
+    current = ext_table_head;
+    int i = 0;
+    while (current) {
+        externals[i++] = current;
+        current = current->next;
+    }
+
+    for (int j = i - 1; j >= 0; j--) {
+        fprintf(file, "%-6s %07d\n", externals[j]->label_name, externals[j]->address);
+    }
+
+    free(externals);
+    fclose(file);
+    printf("File %s created successfully.\n", ext_filename);
+
 }
 
 void make_ent_file(const char *filename, Symbol *symbol_table_head) {
