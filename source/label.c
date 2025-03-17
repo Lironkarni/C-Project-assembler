@@ -56,19 +56,24 @@ int is_valid_label(char *label, Line *line)
 void add_symbol(Line *line, char *name, int instruction_index, int is_code)
 {
     guide_type type = (guide_type)instruction_index;
+	/* Check if symbol already exists */
     if (find_symbol(name) == NULL)
     {
+		/* Allocate memory for new symbol */
         Symbol *new_symbol = (Symbol *)malloc(sizeof(Symbol));
         if (!new_symbol)
         {
-            print_system_error(ERROR_CODE_3);
+            print_system_error(ERROR_CODE_3); /* Memory allocation failed */
             return;
         }
+		 /* Copy symbol name safely */
         strncpy(new_symbol->name, name,sizeof(new_symbol->name) - 1);
 		new_symbol->name[sizeof(new_symbol->name) - 1] = '\0';
+		/* Set symbol type and add it to symbol table */
         new_symbol->type = type;
         new_symbol->next = symbol_table_head;
         symbol_table_head = new_symbol;
+		/* Set symbol address based on its type */
         if (instruction_index == EXTERN_INDEX)
         {
             new_symbol->address = ZERO; 
@@ -84,10 +89,11 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
     }
     else
     {
-        print_syntax_error(ERROR_CODE_18, line->file_name, line->line_number);
+        print_syntax_error(ERROR_CODE_18, line->file_name, line->line_number); /* Symbol already exists */
         return;
     }
 }
+
 Symbol *find_symbol(char *name)
 {
     Symbol *current = symbol_table_head;
@@ -102,7 +108,7 @@ Symbol *find_symbol(char *name)
 
 int add_to_ext_list(ext_list *ext_list_head, char *label_name)
 {
-	//ext_ent_list *current= ext_ent_list_head;
+	//ext_list *current= ext_list_head;
 	ext_list *new_label = (ext_list *)malloc(sizeof(ext_list));
         if (!new_label)
         {
@@ -125,10 +131,13 @@ int add_to_ext_list(ext_list *ext_list_head, char *label_name)
 void update_symbol_tabel()
 {
 	Symbol *current = symbol_table_head;
+	/* Iterate through the symbol table and update symbol addresses */
     while (current)
     {
-        if (current->type!=EXTERNAL && current->type!=-1)
-            current->address+=IC;
-        current = current->next;
+		/* Update addresses only for non-external symbols with valid types */
+        if (current->type!=EXTERNAL && current->type!=-1){
+            current->address+=IC; /* Update address with instruction counter offset */
+	    }
+        current = current->next;/* Move to next symbol */
     }
 }
