@@ -7,131 +7,139 @@
 #include "../headers/utils.h"
 #include "../headers/memory_struct.h"
 
-#define SUM_OPERATIONS 16 /** Number of supported operations in the assembler */
+#define SUM_OPERATIONS 16 /* number of supported assembler operations */
 
-/**
- * @brief Enum representing different addressing methods.
+/*
+ * Enum: address_method_type
+ * ----------------------------
+ *   Defines addressing method types.
  */
 typedef enum address_method_type {
-    IMMEDIATE,         /** Immediate addressing (e.g., #5) */
-    DIRECT,            /** Direct addressing (label) */
-    RELATIVE,          /** Relative addressing (&label) */
-    DIRECT_REGISTER    /** Direct register addressing (e.g., r1, r2) */
+    IMMEDIATE,        /* immediate addressing (#5) */
+    DIRECT,           /* direct addressing (label) */
+    RELATIVE,         /* relative addressing (&label) */
+    DIRECT_REGISTER   /* direct register addressing (r1, r2) */
 } address_method_type;
 
-/**
- * @brief Enum representing valid addressing method combinations.
- *
- * This enum defines the allowed combinations of source and destination addressing methods
- * for different operations.
+/*
+ * Enum: valid_address_method
+ * ----------------------------
+ *   Defines valid addressing method combinations.
  */
 typedef enum valid_address_method {
-    METHOD_0_1_3,  /**Valid methods: IMMEDIATE, DIRECT, DIRECT_REGISTER */
-    METHOD_1,      /**Valid method: DIRECT */
-    METHOD_1_3,    /**Valid methods: DIRECT, DIRECT_REGISTER */
-    METHOD_1_2,    /**Valid methods: DIRECT, RELATIVE */
-    NONE           /**No valid addressing methods (invalid operation) */
+    METHOD_0_1_3, /* valid: IMMEDIATE, DIRECT, DIRECT_REGISTER */
+    METHOD_1,     /* valid: DIRECT */
+    METHOD_1_3,   /* valid: DIRECT, DIRECT_REGISTER */
+    METHOD_1_2,   /* valid: DIRECT, RELATIVE */
+    NONE          /* no valid methods (invalid operation) */
 } valid_address_method;
 
-/**
- * @brief Represents addressing methods for an operation.
+/*
+ * Struct: address_method
+ * ----------------------------
+ *   Defines addressing methods allowed for operations.
  *
- * This struct defines the number of arguments an operation takes and the allowed
- * addressing methods for both the source and destination operands.
+ *   num_args: number of operands required
+ *   address_method_source: allowed methods for source operand
+ *   address_method_dest: allowed methods for destination operand
  */
 typedef struct address_method {
-    int num_args;                        /**<Number of arguments required */
-    valid_address_method address_method_source; /** Allowed addressing methods for source operand */
-    valid_address_method address_method_dest;   /** Allowed addressing methods for destination operand */
+    int num_args; 
+    valid_address_method address_method_source; 
+    valid_address_method address_method_dest;   
 } address_method;
 
-/**
- * @brief Represents an operation in the assembler.
+/*
+ * Struct: op_code
+ * ----------------------------
+ *   Represents an assembler operation.
  *
- * This struct defines an assembly operation, including its name, opcode, function code,
- * and the valid addressing methods.
+ *   operation_name: operation name ("mov", "add", etc.)
+ *   opcode: numeric opcode
+ *   funct: numeric function code (if applicable)
+ *   address_method: valid addressing methods
  */
 typedef struct op_code {
-    char* operation_name; /** Name of the operation (e.g., "mov", "add") */
-    int opcode;           /** The opcode value */
-    int funct;            /** Function code for some operations */
-    address_method address_method; /** Allowed addressing methods */
+    char* operation_name; 
+    int opcode;           
+    int funct;            
+    address_method address_method; 
 } op_code;
 
-/**
- * @brief List of all supported operations in the assembler.
- */
+/* List of supported assembler operations */
 extern op_code operation_list[SUM_OPERATIONS];
 
-/**
- * @brief Checks if a given word is a valid operation.
+/*
+ * Function: check_if_operation
+ * ----------------------------
+ *   Checks if word is a valid operation.
  *
- * This function searches the list of supported operations and returns the index
- * if found.
+ *   first_word: word to check
  *
- * @param first_word The word to check.
- * @return The index of the operation if found, otherwise -1.
+ *   returns: operation index or -1 if not found
  */
 int check_if_operation(char* first_word);
 
-/**
- * @brief Extracts the next word from a line.
+/*
+ * Function: get_word
+ * ----------------------------
+ *   Extracts the next word from the line.
  *
- * This function retrieves the next word from a given line, skipping whitespace.
+ *   line: input line
  *
- * @param line The input line.
- * @return A pointer to the extracted word.
+ *   returns: pointer to extracted word
  */
 char* get_word(char* line);
 
-/**
- * @brief Analyzes an operation and processes it accordingly.
+/*
+ * Function: analyse_operation
+ * ----------------------------
+ *   Processes operation details.
  *
- * This function processes an operation by analyzing its operands, addressing methods,
- * and storing the relevant information in the code image.
- *
- * @param line Pointer to the `Line` structure containing the parsed line.
- * @param second_word The second word in the line (after the operation name).
- * @param is_label Flag indicating if the line starts with a label (1 if true, 0 otherwise).
- * @param first_word The first word in the line (operation name).
- * @param instruction_index The index of the instruction in the operation list.
- * @param code_image Pointer to the `code_word` structure representing the machine code.
+ *   line: pointer to parsed line info
+ *   second_word: second word after operation
+ *   is_label: flag if line has label (1: yes, 0: no)
+ *   first_word: operation name
+ *   instruction_index: index in operation list
+ *   code_image: pointer to code memory structure
  */
 void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image);
 
-/**
- * @brief Determines the addressing method of an operand.
+/*
+ * Function: which_addressing_method
+ * ----------------------------
+ *   Determines operand addressing method.
  *
- * This function identifies the addressing method used for a given operand.
+ *   ptr: operand to analyze
+ *   op_index: operation index
+ *   line: pointer to parsed line info
  *
- * @param ptr The operand to analyze.
- * @param op_index The index of the operation in the operation list.
- * @param line Pointer to the `Line` structure containing the parsed line.
- * @return The addressing method type (IMMEDIATE, DIRECT, RELATIVE, etc.).
+ *   returns: addressing method type
  */
 int which_addressing_method(char *ptr, int op_index, Line *line);
 
-/**
- * @brief Checks if a given string represents a register.
+/*
+ * Function: is_register
+ * ----------------------------
+ *   Checks if operand is a register.
  *
- * This function determines whether the provided operand is a valid register.
+ *   ptr: operand to check
  *
- * @param ptr The operand to check.
- * @return Returns 1 if the operand is a register, 0 otherwise.
+ *   returns: 1 if register, 0 otherwise
  */
 int is_register(char *ptr);
 
-/**
- * @brief Validates the addressing method for an operation.
+/*
+ * Function: is_legal_method
+ * ----------------------------
+ *   Checks validity of addressing method for operation.
  *
- * This function checks if the provided addressing method is valid for the given
- * operation and operand position.
+ *   line: pointer to parsed line info
+ *   method: addressing method to validate
+ *   op_index: operation index
+ *   num_args: number of operands
  *
- * @param line Pointer to the `Line` structure containing the parsed line.
- * @param method The addressing method to check.
- * @param op_index The index of the operation in the operation list.
- * @param num_args The number of arguments in the operation.
- * @return Returns 1 if the method is valid, 0 otherwise.
+ *   returns: 1 if valid method, 0 otherwise
  */
 int is_legal_method(Line *line, int method, int op_index, int num_args);
 

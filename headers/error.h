@@ -5,24 +5,25 @@
 #include <stdio.h>
 #include <string.h>
 
-/**
- * @brief Represents an error with an associated error code and error message.
+/*
+ * Struct: error
+ * ----------------------------
+ *   Represents an error with code and message.
  *
- * This struct is used to store error information, including a unique identifier
- * and user-readable message describing the error.
+ *   err_code: numeric error code
+ *   err_message: descriptive error message
  */
 typedef struct error {
-    int err_code;     /* identifier for the error */
-    char* err_message; /* Error message associated with the error */
+    int err_code;       /* numeric error code */
+    char* err_message;  /* descriptive error message */
 } error;
 
-/**
- * @brief Enumeration of possible error codes.
- *
- * This enum defines a set of error codes used throughout the assembler to 
- * categorize and report different types of errors.
+/*
+ * Enum: error_codes
+ * ----------------------------
+ *   Defines numeric error codes used to identify common errors.
  */
-typedef enum error_codes {
+typedef enum error_codes  {
     ERROR_CODE_0 = 0,  /* No error found */
     ERROR_CODE_1,      /* No files entered, can't run program */
     ERROR_CODE_2,      /* File does not exist */
@@ -68,37 +69,27 @@ typedef enum error_codes {
     ERROR_CODE_42      /* Operand of type number (#) must be an integer (not decimal) */
 } error_codes;
 
-/**
- * @brief Flags that indicate if errors were found during different assembly phases.
+/* Flags indicating if errors were found during program phases */
+extern int FOUND_ERROR_IN_PRE_ASSEMBLER; /** Flag for pre-assembler errors */
+extern int FOUND_ERROR_IN_FIRST_PASS;    /** Flag for first pass errors */
+extern int FOUND_ERROR_IN_SECOND_PASS;   /** Flag for second pass errors */
+/*
+ * Function: print_system_error
+ * ----------------------------
+ *   Prints a general system error message.
  *
- * These external variables track whether errors occurred during:
- * - The pre-assembler phase
- * - The first pass
- * - The second pass
- */
-extern int FOUND_ERROR_IN_PRE_ASSEMBLER; /**< Flag for pre-assembler errors */
-extern int FOUND_ERROR_IN_FIRST_PASS;    /**< Flag for first pass errors */
-extern int FOUND_ERROR_IN_SECOND_PASS;   /**< Flag for second pass errors */
-
-/**
- * @brief Prints a system error message.
- *
- * This function prints an error message associated with a system-related error.
- *
- * @param error_code The error code representing the error.
+ *   error_code: specific error encountered
  */
 void print_system_error(int error_code);
 
-/**
- * @brief Prints a syntax error message with file name and line number.
+/*
+ * Function: print_syntax_error
+ * ----------------------------
+ *   Prints a syntax error message with file name and line number.
  *
- * This function reports syntax errors encountered during assembly processing.
- * It also sets the `FOUND_ERROR_IN_PRE_ASSEMBLER` flag if the error is related
- * to macros or extra characters in macro declarations.
- *
- * @param error_code The error code representing the encountered error.
- * @param file_name The name of the file where the error was found.
- * @param line_number The line number where the error occurred.
+ *   error_code: specific error encountered
+ *   file_name: name of file with error
+ *   line_number: line number where error occurred
  */
 void print_syntax_error(int error_code, const char* file_name, int line_number);
 

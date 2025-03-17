@@ -1,6 +1,7 @@
 #include "../headers/error.h"
 #include "../headers/globals.h"
 
+/* Array of defined errors and corresponding messages */
 error errors[]={
     {ERROR_CODE_0, "NO ERROR FOUND"},
     {ERROR_CODE_1, "NO FILES ENTERED, CAN'T RUN PROGRAM"},
@@ -47,13 +48,14 @@ error errors[]={
     {ERROR_CODE_42, "OPERAND OF KIND NUMBER (#) SHOULD BE INTEGER (NOT DECIMAL)"}
 };
 
+
 int FOUND_ERROR_IN_PRE_ASSEMBLER = 0;
 int FOUND_ERROR_IN_FIRST_PASS=0;
 int FOUND_ERROR_IN_SECOND_PASS=0;
 
 void print_system_error(int error_code){
     if(error_code==ERROR_CODE_4){
-        FOUND_ERROR_IN_FIRST_PASS=1;
+        FOUND_ERROR_IN_FIRST_PASS=1; /* mark error encountered in first pass */
     }
     printf("ERROR: code %d | %s\n",error_code, errors[error_code].err_message);
 }
@@ -62,7 +64,7 @@ void print_system_error(int error_code){
 void print_syntax_error(int error_code, const char* file_name, int line_number)
 {
     if (error_code==ERROR_CODE_16 ||error_code==ERROR_CODE_14||error_code==ERROR_CODE_15 ||error_code==ERROR_CODE_13 ){
-        FOUND_ERROR_IN_PRE_ASSEMBLER = 1;
+        FOUND_ERROR_IN_PRE_ASSEMBLER = 1; /* mark error encountered in pre-assembly phase */
     }
     printf("ERROR: code %d | in file: %s | at line: %d \n%s\n", error_code, file_name, line_number, errors[error_code].err_message);
 }

@@ -6,161 +6,171 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define MAX_LINE_LENGTH 1024 /**< Maximum length of a line in the source file */
+#define MAX_LINE_LENGTH 1024 /* maximum line length in source file */
 
-/**
- * @brief List of directive keywords in assembly.
- *
- * These are special keywords that indicate data-related instructions.
- */
+/* רשימת מילות מפתח של דירקטיבות באסמבלר */
 static const char *directive_words[] = { "data", "string", "extern", "entry" };
 
-/**
- * @brief Number of directive keywords in the assembler.
- */
+/* כמות מילות מפתח של דירקטיבות באסמבלר */
 static const int directive_count = sizeof(directive_words) / sizeof(directive_words[0]);
 
-/**
- * @brief Represents a macro in the pre-assembler.
+/*
+ * Struct: Macro
+ * ----------------------------
+ *   Represents a macro definition.
  *
- * This struct holds the macro name, its content (stored as a dynamic array of lines),
- * the number of lines in the macro, and a pointer to the next macro in a linked list.
+ *   name: macro name
+ *   content: lines of macro content
+ *   line_count: number of lines in macro
+ *   next: pointer to next macro
  */
 typedef struct Macro {
-    char *name;             /**< Name of the macro (allocated dynamically) */
-    char **content;         /**< Array of lines containing the macro's content */
-    int line_count;         /**< Number of lines in the macro */
-    struct Macro *next;     /**< Pointer to the next macro in the linked list */
+    char *name;        /* macro name */
+    char **content;    /* macro content lines */
+    int line_count;    /* number of lines */
+    struct Macro *next;/* pointer to next macro */
 } Macro;
 
-/**
- * @brief Represents a line of the source file.
+/*
+ * Struct: Line
+ * ----------------------------
+ *   Represents a line from the source file.
  *
- * This struct holds information about a line in the source file, including its
- * file name, content, and line number.
+ *   file_name: source file name
+ *   data: line content
+ *   line_number: line number in source file
  */
 typedef struct Line {
-    char *file_name;   /**< Name of the source file */
-    char *data;        /**< The actual content of the line */
-    int line_number;   /**< Line number in the source file */
+    char *file_name; /* source file name */
+    char *data;      /* line content */
+    int line_number; /* line number */
 } Line;
 
-/**
- * @brief Adds a new macro to the macro list.
+/*
+ * Function: add_macro
+ * ----------------------------
+ *   Adds a new macro to the macro list.
  *
- * This function creates and stores a macro with the given name and content.
- *
- * @param name The name of the macro.
- * @param content An array of strings containing the macro's content.
- * @param line_count The number of lines in the macro.
+ *   name: macro name
+ *   content: array of macro lines
+ *   line_count: number of lines
  */
 void add_macro(const char *name, char **content, int line_count);
 
-/**
- * @brief Finds a macro by name.
+/*
+ * Function: find_macro
+ * ----------------------------
+ *   Finds a macro by name.
  *
- * This function searches for a macro in the macro list.
+ *   name: macro name
  *
- * @param name The name of the macro to find.
- * @return A pointer to the `Macro` struct if found, otherwise NULL.
+ *   returns: pointer to Macro if found, NULL otherwise
  */
 Macro *find_macro(const char *name);
 
-/**
- * @brief Removes extra spaces from a line.
+/*
+ * Function: remove_extra_spaces
+ * ----------------------------
+ *   Removes extra spaces from a line.
  *
- * This function trims leading, trailing, and excessive spaces within a line.
- *
- * @param line The line to clean.
+ *   line: line to clean
  */
 void remove_extra_spaces(char *line);
 
-/**
- * @brief Runs the pre-assembler phase.
+/*
+ * Function: pre_assembler
+ * ----------------------------
+ *   Performs pre-assembly, handling macro expansions.
  *
- * This function processes macros and expands them in the assembly source file.
- *
- * @param filename The name of the source file.
+ *   filename: source file name
  */
 void pre_assembler(const char *filename);
 
-/**
- * @brief Loads the content of a file into memory.
+/*
+ * Function: load_file
+ * ----------------------------
+ *   Loads file content into memory.
  *
- * This function reads the entire content of a file into a dynamically allocated string.
+ *   filename: file name
  *
- * @param filename The name of the file to load.
- * @return A dynamically allocated string containing the file's content.
+ *   returns: pointer to loaded content
  */
 char *load_file(char *filename);
 
-/**
- * @brief Checks if a line is empty or consists only of whitespace.
+/*
+ * Function: is_empty_line
+ * ----------------------------
+ *   Checks if line is empty or whitespace only.
  *
- * @param line The line to check.
- * @return Returns 1 if the line is empty, otherwise 0.
+ *   line: line to check
+ *
+ *   returns: 1 if empty, 0 otherwise
  */
 int is_empty_line(const char *line);
 
-/**
- * @brief Frees memory allocated for stored macros.
- *
- * This function releases all dynamically allocated memory related to macros.
+/*
+ * Function: free_macros
+ * ----------------------------
+ *   Frees allocated memory for macros.
  */
 void free_macros();
 
-/**
- * @brief Checks if a macro name is valid.
+/*
+ * Function: is_valid_macro_name
+ * ----------------------------
+ *   Checks validity of macro name.
  *
- * This function verifies that a macro name follows naming conventions.
+ *   macro_name: macro name to validate
+ *   filename: source file name
+ *   line: line number in source file
  *
- * @param macro_name The macro name to validate.
- * @param filename The source file where the macro is defined.
- * @param line The line number where the macro appears.
- * @return Returns 1 if the macro name is valid, otherwise 0.
+ *   returns: 1 if valid, 0 otherwise
  */
 int is_valid_macro_name(char *macro_name, const char *filename, int line);
 
-/**
- * @brief Validates the end of a macro definition.
+/*
+ * Function: is_valid_macro_end
+ * ----------------------------
+ *   Checks if macro end definition ('endmacro') is correct.
  *
- * This function checks if the `endmacro` directive is correctly placed in the source file.
+ *   line: current line content
+ *   filename: source file name
+ *   line_count: current line number
  *
- * @param line The current line being processed.
- * @param filename The name of the source file.
- * @param line_count The current line number in the source file.
- * @return Returns 1 if the `endmacro` directive is valid, otherwise 0.
+ *   returns: 1 if valid, 0 otherwise
  */
 int is_valid_macro_end(char *line, const char *filename, int line_count);
 
-/**
- * @brief Deletes the `.am` file generated by the pre-assembler.
+/*
+ * Function: delete_am_file
+ * ----------------------------
+ *   Deletes pre-assembled (.am) file.
  *
- * This function removes the intermediate pre-processed assembly file.
- *
- * @param filename The base filename (without the `.am` extension).
+ *   filename: base file name (without extension)
  */
 void delete_am_file(const char *filename);
 
-/**
- * @brief Creates a new `Line` structure.
+/*
+ * Function: create_line
+ * ----------------------------
+ *   Creates a new Line structure.
  *
- * This function allocates and initializes a new `Line` structure for processing.
+ *   temp_line: line content
+ *   file: source file name
+ *   line_number: line number
  *
- * @param temp_line The content of the line.
- * @param file The name of the source file.
- * @param line_number The line number in the source file.
- * @return A pointer to the newly created `Line` structure.
+ *   returns: pointer to new Line
  */
 Line *create_line(char* temp_line, char* file, int line_number);
 
-/**
- * @brief Checks if extraneous text exists after a command.
+/*
+ * Function: extraneous_text
+ * ----------------------------
+ *   Checks if extraneous text exists after command.
  *
- * This function determines if a command is followed by unnecessary text, which could indicate a syntax error.
+ *   command: command string
  *
- * @param command The command to analyze.
- * @return Returns 1 if extraneous text is found, otherwise 0.
+ *   returns: 1 if extraneous text found, 0 otherwise
  */
 int extraneous_text(char *command);
 

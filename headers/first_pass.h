@@ -5,92 +5,92 @@
 #include "../headers/process_input.h"
 #include "../headers/label.h"
 
-#define INSTRUCTION_COUNT 4 /* Number of instruction types */
+#define INSTRUCTION_COUNT 4 /* number of instruction types */
 
-/**
- * @brief Executes the first pass of the assembler.
+/*
+ * Function: first_pass
+ * ----------------------------
+ *   Executes the first pass of the assembler.
  *
- * This function reads the am file and processes each line, handling
- * labels, instructions, and directives. It collects relevant information for the second pass.
+ *   file: name of assembly file to process
  *
- * @param file The name of the assembly file to process.
- * @return Returns 0 if no errors were encountered, otherwise returns a non-zero value.
+ *   returns: 0 if successful, otherwise non-zero
  */
 int first_pass(char *file);
 
-/**
- * @brief Processes a single line from the am file.
+/*
+ * Function: process_line
+ * ----------------------------
+ *   Processes a single line from the assembly file.
  *
- * This function takes a line from the am file and determines its type (instruction, directive, label, etc.).
- * It extracts the first word and processes it accordingly.
- *
- * @param file The line from the am file to process.
+ *   file: line content to process
  */
 void process_line(char* file);
 
-/**
- * @brief Processes the first word in a line.
+/*
+ * Function: process_word
+ * ----------------------------
+ *   Processes the first word of a line.
  *
- * This function analyzes the first word in a line and determines how it should be processed.
- * It checks if the word is an instruction, directive, or label.
- *
- * @param line A pointer to the `Line` structure containing the parsed information.
- * @param first_word The first word extracted from the line.
+ *   line: pointer to Line structure
+ *   first_word: first word extracted from line
  */
 void process_word(Line* line, char* first_word);
 
-/**
- * @brief Determines which instruction is used.
+/*
+ * Function: which_instruction
+ * ----------------------------
+ *   Determines instruction type by its name.
  *
- * This function checks if the given word matches a known instruction and returns its index.
- * If the word is not a valid instruction, it returns -1.
+ *   word: instruction word to check
  *
- * @param word The word to check.
- * @return The instruction index if found, otherwise -1.
+ *   returns: index of instruction, or -1 if invalid
  */
 int which_instruction(char *word);
 
-/**
- * @brief Extracts data values from a .data directive.
+/*
+ * Function: get_data
+ * ----------------------------
+ *   Extracts numeric data from a .data directive.
  *
- * This function parses a `.data` directive and extracts the numerical values into an array.
+ *   line: pointer to Line structure
+ *   inst_index: directive index
+ *   numbers: array to store extracted numbers
  *
- * @param line A pointer to the `Line` structure containing the parsed instruction.
- * @param inst_index The index of the `.data` directive in the instruction set.
- * @param numbers A pointer to an array where the extracted numbers will be stored.
- * @return The number of values extracted, or -1 if an error occurred.
+ *   returns: number of values extracted, or -1 on error
  */
 int get_data(Line *line, int inst_index, int **numbers);
 
-/**
- * @brief Extracts a string from a .string directive.
+/*
+ * Function: get_string_data
+ * ----------------------------
+ *   Extracts string data from a .string directive.
  *
- * This function extracts the string value from a `.string` directive and stores it.
+ *   line: pointer to Line structure
+ *   inst_index: directive index
+ *   string_value: extracted string
  *
- * @param line A pointer to the `Line` structure containing the parsed instruction.
- * @param inst_index The index of the `.string` directive in the instruction set.
- * @param string_value A pointer to a char array where the extracted string will be stored.
- * @return Returns 1 if successful, 0 otherwise.
+ *   returns: 1 if successful, otherwise 0
  */
 int get_string_data(Line *line, int inst_index, char **string_value);
 
-/**
- * @brief Debugging function for first pass.
+/*
+ * Function: test
+ * ----------------------------
+ *   Debugging function to print IC and DC counters.
  *
- * This function prints the instruction counter (IC) and data counter (DC) for debugging purposes.
- *
- * @param dc The current data counter.
- * @param ic The current instruction counter.
+ *   dc: current data counter
+ *   ic: current instruction counter
  */
 void test(int dc, int ic);
 
-/**
- * @brief Prints a value in binary representation.
+/*
+ * Function: print_bits
+ * ----------------------------
+ *   Prints value as binary representation.
  *
- * This function prints a given value as a binary string with the specified number of bits.
- *
- * @param value The value to print.
- * @param bits The number of bits to display.
+ *   value: value to print
+ *   bits: number of bits to display
  */
 void print_bits(uint32_t value, int bits);
 

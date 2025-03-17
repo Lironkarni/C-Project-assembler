@@ -2,110 +2,110 @@
 #define LABEL_H
 
 #include "../headers/utils.h"
-#include "../headers/error.h"
 #include "../headers/process_input.h"
+#include "../headers/label.h"
 
-#define MAX_LABEL_LENGTH 31 /**< Maximum allowed length for a label name */
+#define MAX_LABEL_LENGTH 31 /* maximum length of a label name */
 
-/**
- * @brief Enum representing different types of assembler directives.
+/*
+ * Enum: guide_type
+ * ----------------------------
+ *   Represents types of assembler directives.
  */
 typedef enum guide_type {
-    DATA,      /** .data directive */
-    STRING,    /** .string directive */
-    ENTRY,     /** .entry directive */
-    EXTERNAL,  /** .extern directive */
-    OPERATION  /** operation (command) */
+    DATA,       /* .data directive */
+    STRING,     /* .string directive */
+    ENTRY,      /* .entry directive */
+    EXTERNAL,   /* .extern directive */
+    OPERATION   /* assembler operation (command) */
 } guide_type;
 
-/**
- * @brief Represents a symbol (label) in the assembler's symbol table.
+/*
+ * Struct: Symbol
+ * ----------------------------
+ *   Represents a label in the symbol table.
  *
- * This struct stores information about labels, including their name, memory address,
- * type (data, string, entry, external, or operation), and a pointer to the next symbol.
+ *   name: label name
+ *   address: memory address of the label
+ *   type: type of label
+ *   next: pointer to next symbol in the list
  */
 typedef struct symbol {
-    char name[MAX_LABEL_LENGTH]; /** The name of the label */
-    int address;                 /** Memory address assigned to the label */
-    guide_type type;             /** Type of the label (data, string, entry, etc.) */
-    struct symbol *next;         /** Pointer to the next symbol in the list */
+    char name[MAX_LABEL_LENGTH];
+    int address;
+    guide_type type;
+    struct symbol *next;
 } Symbol;
 
-/**
- * @brief Represents an entry in the list of external labels.
+/*
+ * Struct: ext_list
+ * ----------------------------
+ *   Represents an external label reference.
  *
- * This struct stores information about labels defined as `.extern`, including
- * the label name, its memory address, and a pointer to the next external label.
+ *   label_name: external label name
+ *   address: reference address
+ *   next: pointer to next external label
  */
 typedef struct ext_list {
-    char *label_name;       /** Name of the external label */
-    int address;            /** Address where the external label is used */
-    struct ext_list *next;  /** Pointer to the next external label in the list */
+    char *label_name;
+    int address;
+    struct ext_list *next;
 } ext_list;
 
-/**
- * @brief Head of the symbol table linked list.
- *
- * This variable points to the first symbol in the symbol table.
- */
-extern Symbol *symbol_table_head;
+extern Symbol *symbol_table_head; /* head pointer for symbol table */
 
-/**
- * @brief Checks if a given label name is valid.
+/*
+ * Function: is_valid_label
+ * ----------------------------
+ *   Checks if a label name is valid.
  *
- * This function verifies that a label follows assembler naming rules.
- * A valid label:
- * - Starts with a letter.
- * - Contains only alphanumeric characters.
- * - Does not exceed the maximum label length.
- * - Is not a reserved keyword.
+ *   label: label name to validate
+ *   line: pointer to Line structure
  *
- * @param label The label name to check.
- * @param line Pointer to the `Line` structure containing the parsed line.
- * @return Returns 1 if the label is valid, 0 otherwise.
+ *   returns: 1 if valid, 0 otherwise
  */
 int is_valid_label(char *label, Line *line);
 
-/**
- * @brief Adds a new symbol to the symbol table.
+/*
+ * Function: add_symbol
+ * ----------------------------
+ *   Adds a new symbol to the symbol table.
  *
- * This function creates a new symbol entry and adds it to the symbol table.
- * The symbol can be a data label, a code label, or a directive.
- *
- * @param line Pointer to the `Line` structure containing the parsed line.
- * @param name The name of the label to add.
- * @param instruction_index The instruction index associated with this symbol.
- * @param is_code A flag indicating whether the symbol is for code (1) or data (0).
+ *   line: pointer to Line structure
+ *   name: label name
+ *   instruction_index: associated instruction index
+ *   is_code: 1 if code symbol, 0 if data symbol
  */
 void add_symbol(Line *line, char *name, int instruction_index, int is_code);
 
-/**
- * @brief Finds a symbol in the symbol table.
+/*
+ * Function: find_symbol
+ * ----------------------------
+ *   Finds a symbol in the symbol table.
  *
- * This function searches for a label by name in the symbol table.
+ *   name: label name to find
  *
- * @param name The label name to search for.
- * @return A pointer to the `Symbol` structure if found, otherwise NULL.
+ *   returns: pointer to Symbol if found, otherwise NULL
  */
 Symbol *find_symbol(char *name);
 
-/**
- * @brief Updates the symbol table after the first pass.
- *
- * This function processes symbols and updates their addresses based on the
- * instruction and data counters after the first pass.
+/*
+ * Function: update_symbol_table
+ * ----------------------------
+ *   Updates symbol addresses after first pass.
  */
-void update_symbol_tabel();
+void update_symbol_table();
 
-/**
- * @brief Adds a label to the external label list.
+/*
+ * Function: add_to_ext_list
+ * ----------------------------
+ *   Adds an external label reference.
  *
- * This function adds a reference to an external label in the ext_list.
+ *   ext_list_head: head pointer for external label list
+ *   label_name: external label name
+ *   address: address where the external label is used
  *
- * @param ext_list_head Pointer to the head of the external labels list.
- * @param label_name The name of the external label.
- * @param address The address where the label is referenced.
- * @return Returns 1 if successful, 0 otherwise.
+ *   returns: 1 if successful, 0 otherwise
  */
 int add_to_ext_list(ext_list *ext_list_head, char *label_name, int address);
 
