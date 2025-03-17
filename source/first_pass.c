@@ -7,8 +7,8 @@
 #include "../headers/label.h"
 #include "../headers/second_pass.h"
 
-code_word code_image[MEM_SIZE];
-data_word data_image[MEM_SIZE];
+code_word code_image[MEM_SIZE]; /* Memory array for code instructions */
+data_word data_image[MEM_SIZE]; /* Memory array for data instructions */
 
 char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 
@@ -16,14 +16,14 @@ Symbol *symbol_table_head = NULL;
 ext_list *ext_table_head=NULL;
 
 
-/*start the first pass*/
 int first_pass(char *file)
 {
-    process_line(file);
+    process_line(file); /* Process each line from the file */
+    /* Check if errors were found during the first pass */
     if (FOUND_ERROR_IN_FIRST_PASS)
     {
-        FOUND_ERROR_IN_FIRST_PASS = 0;
-        return 1;
+        FOUND_ERROR_IN_FIRST_PASS = 0; /* Reset error flag */
+        return 1; /* Exit due to errors */
     }
 
     //update symbol table
@@ -41,45 +41,48 @@ void process_line(char *file)
     int line_number = 0, line_len, c;
     Line *line;
 
-    input_file = fopen(file, "r");
+    input_file = fopen(file, "r");  /* Open the input file for reading */
     if (input_file == NULL)
     {
-        print_system_error(ERROR_CODE_4);
+        print_system_error(ERROR_CODE_4); /* Report file open error */
     }
     else
     {
-        while (fgets(temp_line, sizeof(temp_line), input_file))
+        while (fgets(temp_line, sizeof(temp_line), input_file)) /* Read file line by line */
         {
-            printf("%s", temp_line);
+            printf("%s", temp_line); /* Print the current line (for debugging) */
             line_number++;
-            line_len = strlen(temp_line);        /*get line length*/
-            if (temp_line[line_len - 1] == '\n') /*put '\0' at the end of each line*/
+            line_len = strlen(temp_line);       /* Calculate line length */
+            /* Replace newline character with NULL_CHAR */
+            if (temp_line[line_len - 1] == '\n') 
                 temp_line[line_len - 1] = NULL_CHAR;
-
+            /* Check for line length overflow */
             if (line_len > MAX_LINE_LEN)
                 if (temp_line[MAX_LINE_LEN] != NULL_CHAR && temp_line[MAX_LINE_LEN] != '\n')
                 {
-                    print_syntax_error(ERROR_CODE_8, file, line_number); /*error longer than 80*/
+                    print_syntax_error(ERROR_CODE_8, file, line_number); /* Report line length error */
+
+                    /* Clear remaining characters in the line */
                     while ((c = fgetc(input_file)) != '\n' && c != EOF)
-                        ;     /*clear the rest of the line*/
+                        ;    
                     continue; /*don't check this row, move to the next one*/
                 }
 
-            /*make line*/
+            /*make line struct*/
             line = create_line(temp_line, file, line_number);
 
             if (line == NULL)
             {
-                /*TODO-need to free all memery*/
+                /* TODO: need to free all memery*/
                 exit(1);
             }
 
-            /*get the fisrt word and check if this is guiding or instructive sentence*/
-            first_word = get_word(line->data);
-            process_word(line, first_word);
+            
+            first_word = get_word(line->data); /* Extract the first word from the line */
+            process_word(line, first_word); /* Process extracted word */
         }
     }
-    fclose(input_file);
+    fclose(input_file); /* Close the input file */
 }
 
 void process_word(Line *line, char *first_word)
@@ -91,6 +94,7 @@ void process_word(Line *line, char *first_word)
 
     word_len = strlen(first_word);
 
+    /* Check if the first word is a label (ends with ':') */
     if (first_word[word_len - 1] == COLON)
     {
         is_label = 1;
@@ -98,17 +102,19 @@ void process_word(Line *line, char *first_word)
         {
             FOUND_ERROR_IN_FIRST_PASS = 1;
         }
-        first_word[word_len - 1] = NULL_CHAR;
+        first_word[word_len - 1] = NULL_CHAR; /* Remove ':' from label */
     }
 
+    /* Get the next word if label, otherwise use first_word */
     second_word = is_label ? get_word(NULL) : first_word;
     instruction_index = which_instruction(second_word);
 
+    /* Check if the word is an assembler directive */
     if (instruction_index != -1) // אם זו הנחיה
     {
         switch (instruction_index)
         {
-        case 0: // data
+        case 0: /* .data directive */
             if (is_label)
             {
                 add_symbol(line, first_word, instruction_index, is_code);
@@ -123,7 +129,7 @@ void process_word(Line *line, char *first_word)
             }
 
             break;
-        case 1: // string
+        case 1: /* .string directive */
 
             if (is_label)
             {
@@ -138,14 +144,14 @@ void process_word(Line *line, char *first_word)
                 add_string_data(data_image, string_value, line);
             }
             break;
-        case 2: // entry
+        case 2: /* .entry directive (handled in second pass) */
             second_word = get_word(NULL);
             if (is_label)
             {
                 printf("WARNING: label is ignored in entry line\n");
             }
             break; // handle in second pass
-        case 3:    // extern
+        case 3:    /* .extern directive */
             second_word = get_word(NULL);
             if (is_label)
             {
@@ -160,8 +166,9 @@ void process_word(Line *line, char *first_word)
         return;
     }
 
-    else // not instruction. its operation
+    else /* The word is an assembly operation */
     {
+        /* Check for illegal comma after operation */
         if(first_word[word_len-1]==COMMA)
         {
             print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
@@ -169,31 +176,33 @@ void process_word(Line *line, char *first_word)
             return;
         }
 
-        analyse_operation(line, second_word, is_label, first_word, instruction_index, code_image); // ניתוח הקלט (מספר אופרנדים ושיטת מיעון וכו)
+        analyse_operation(line, second_word, is_label, first_word, instruction_index, code_image); /* Analyse operands and addressing modes */
     }
 }
 
 int which_instruction(char *word)
 {
     int i;
+    /* Check if the word matches any known directive */
     for (i = 0; i < INSTRUCTION_COUNT; i++)
     {
         if (strcmp(word, instruction_list[i]) == 0)
-            return i;
+            return i; /* Return index of the directive if found */
     }
-    return -1;
+    return -1; /* Word is not a recognized directive */
 }
 
-/*this function get the data if its ".data", and check if its valid or there are errors*/
 int get_data(Line *line, int inst_index, int **numbers)
 {
     int expect_number = 1; // 0- expect number, 1- expect comma
     int capacity, count = 0;
     char *data_ptr = strstr(line->data, instruction_list[inst_index]);
+    /* Move pointer past directive keyword */
     data_ptr += strlen(instruction_list[inst_index]);
     while (*data_ptr == ' ')
         data_ptr++;
 
+    /* Allocate initial memory for numbers array */
     capacity = INIT_CAPACITY;
     *numbers = (int *)malloc(capacity * sizeof(int));
     if (*numbers == NULL)
@@ -206,6 +215,7 @@ int get_data(Line *line, int inst_index, int **numbers)
         if (expect_number)
         {
             char *end_ptr;
+            /* Check if sign character is followed by a digit */
             if (*data_ptr == MINUS || *data_ptr == PLUS)
             {
                 if (!isdigit(*(data_ptr + 1)))
@@ -221,25 +231,26 @@ int get_data(Line *line, int inst_index, int **numbers)
                 free(*numbers);
                 return 1;
             }
-
+            /* Convert string to integer */
             int num=strtol(data_ptr, &end_ptr, DECIMAL);
             if (*end_ptr == '.') { 
                 print_syntax_error(ERROR_CODE_41, line->file_name, line->line_number);
                 free(*numbers);
                 return 1;
             }
+            /* Resize numbers array if necessary */
             if (count >= capacity)
             {
                 capacity *= 2;
-                *numbers = (int *)realloc(*numbers, capacity * sizeof(int));
+                *numbers = (int *)realloc(*numbers, capacity * sizeof(int)); 
                 if (*numbers == NULL)
                 {
                     print_system_error(ERROR_CODE_3);
                     exit(1);
                 }
             }
-            (*numbers)[count++] = num;
-            expect_number = 0; // expecting now a comma
+            (*numbers)[count++] = num; /* Store number in array */
+            expect_number = 0;  /* Next character should be comma */
             data_ptr= end_ptr;
         }
         else
@@ -250,13 +261,14 @@ int get_data(Line *line, int inst_index, int **numbers)
                 free(*numbers);
                 return 1;
             }
-            expect_number = 1;
+            expect_number = 1; /* Next we expect a number */
             data_ptr++;
         }
+        /* Skip spaces between numbers/commas */
         while (*data_ptr == SPACE)
             data_ptr++;
     }
-    // check if line ended with comma
+    /* Check if data instruction ends incorrectly with a comma */
     if (expect_number)
     {
         print_syntax_error(ERROR_CODE_24, line->file_name, line->line_number);
@@ -264,7 +276,7 @@ int get_data(Line *line, int inst_index, int **numbers)
         return 1;
     }
     (*numbers)[count] = NULL_CHAR;
-    return 0;
+    return 0; /* Success */
 }
 
 int get_string_data(Line *line, int inst_index, char **characters)
@@ -273,25 +285,30 @@ int get_string_data(Line *line, int inst_index, char **characters)
     char *char_array;
     char *data_ptr = strstr(line->data, instruction_list[inst_index]);
 
+    /* Check if directive exists in the line */
     if (!data_ptr)
     {
         print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
         return 1;
     }
 
+    /* Move pointer past directive keyword */
     data_ptr += strlen(instruction_list[inst_index]);
 
+    /* Skip initial spaces */
     while (*data_ptr == SPACE) // דילוג על רווחים
         data_ptr++;
 
+    /* Check if string begins with quotation mark */
     if (*data_ptr != QUOTE)
-    { // אם המחרוזת לא מתחילה בגרשיים - שגיאה
+    { 
         print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
         return 1;
     }
 
-    data_ptr++; // מעבר אחרי המרכאה הפותחת
+    data_ptr++;  /* Skip opening quotation mark */
 
+    /* Allocate initial memory for storing string */
     char_array = (char *)malloc(capacity * sizeof(char));
     if (!char_array)
     {
@@ -299,7 +316,7 @@ int get_string_data(Line *line, int inst_index, char **characters)
         exit(1);
     }
 
-    // קריאת המחרוזת עד המרכאה הסוגרת
+    /* Read characters until closing quotation mark */
     while (*data_ptr && *data_ptr != QUOTE)
     {
         if (length >= capacity)
@@ -315,23 +332,24 @@ int get_string_data(Line *line, int inst_index, char **characters)
         char_array[length++] = *data_ptr++;
     }
 
+    /* Check for missing closing quotation mark */
     if (*data_ptr != QUOTE)
-    { // אם אין מרכאה סוגרת - שגיאה
+    { 
         print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
         free(char_array);
         return 1;
     }
 
-    char_array[length] = NULL_CHAR; // סימון סוף מחרוזת
+    char_array[length] = NULL_CHAR;  /* Mark end of string */
     *characters = char_array;
 
-    data_ptr++; // מעבר אחרי המרכאה הסוגרת
+    data_ptr++; /* Move past closing quotation mark */
 
-    // דילוג על רווחים אחרי המחרוזת
+    /* Skip trailing spaces */
     while (*data_ptr == SPACE)
         data_ptr++;
 
-    // אם יש עוד תווים אחרי המחרוזת - שגיאה
+     /* Check for extraneous characters after the closing quotation mark */
     if (*data_ptr != NULL_CHAR)
     {
         print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
@@ -339,7 +357,7 @@ int get_string_data(Line *line, int inst_index, char **characters)
         return 1;
     }
 
-    return 0; // הצלחה
+    return 0;/* Success */
 }
 
 void test(int dc, int ic)
@@ -401,6 +419,7 @@ void test(int dc, int ic)
 
 void print_bits(uint32_t value, int bits)
 {
+    /* Iterate over each bit and print its value (0 or 1) */
     for (int i = bits - 1; i >= 0; i--)
     {
         printf("%d", (value >> i) & 1);
