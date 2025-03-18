@@ -2,6 +2,9 @@
 #include "../headers/globals.h"
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
+#include "../headers/pre_assembler.h"
+#include "../headers/macro.h"
+
 
 int main(int argc, char *argv[]) {
     int i;

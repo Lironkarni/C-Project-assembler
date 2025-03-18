@@ -2,6 +2,8 @@
 #include "../headers/label.h"
 #include "../headers/error.h"
 #include "../headers/first_pass.h"
+#include "../headers/op_list.h"
+
 
 void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
 {

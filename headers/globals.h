@@ -26,6 +26,12 @@
 /* Initial memory allocation size for data structures */
 #define INIT_MEMORY 100  
 
+ /* number of supported assembler operations */
+#define SUM_OPERATIONS 16
+
+/* number of instruction types */
+#define INSTRUCTION_COUNT 4 
+
 /* Character denoting a comment line */
 #define COMMENT ';'  
 

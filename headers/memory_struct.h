@@ -4,6 +4,8 @@
 #include "../headers/utils.h"
 #include "../headers/globals.h"
 #include "../headers/error.h"
+#include "../headers/line.h"
+
 
 #include <stdint.h>
 

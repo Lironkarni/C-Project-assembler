@@ -5,8 +5,6 @@
 #include "../headers/process_input.h"
 #include "../headers/label.h"
 
-#define INSTRUCTION_COUNT 4 /* number of instruction types */
-
 /*
  * Function: first_pass
  * ----------------------------
@@ -36,17 +34,6 @@ void process_line(char* file);
  *   first_word: first word extracted from line
  */
 void process_word(Line* line, char* first_word);
-
-/*
- * Function: which_instruction
- * ----------------------------
- *   Determines instruction type by its name.
- *
- *   word: instruction word to check
- *
- *   returns: index of instruction, or -1 if invalid
- */
-int which_instruction(char *word);
 
 /*
  * Function: get_data
@@ -93,5 +80,20 @@ void test(int dc, int ic);
  *   bits: number of bits to display
  */
 void print_bits(uint32_t value, int bits);
+
+/*
+ * Function: analyse_operation
+ * ----------------------------
+ *   Processes operation details.
+ *
+ *   line: pointer to parsed line info
+ *   second_word: second word after operation
+ *   is_label: flag if line has label (1: yes, 0: no)
+ *   first_word: operation name
+ *   instruction_index: index in operation list
+ *   code_image: pointer to code memory structure
+ */
+void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image);
+
 
 #endif /* FIRST_PASS_H */

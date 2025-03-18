@@ -1,7 +1,7 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "../headers/utils.h"
+#include "../headers/line.h"
 #include "../headers/process_input.h"
 #include "../headers/label.h"
 #include "../headers/first_pass.h"

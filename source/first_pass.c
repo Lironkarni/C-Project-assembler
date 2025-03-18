@@ -6,11 +6,12 @@
 #include "../headers/memory_struct.h"
 #include "../headers/label.h"
 #include "../headers/second_pass.h"
+#include "../headers/op_list.h"
+
 
 code_word code_image[MEM_SIZE]; /* Memory array for code instructions */
 data_word data_image[MEM_SIZE]; /* Memory array for data instructions */
 
-char *instruction_list[] = {".data", ".string", ".entry", ".extern"};
 
 Symbol *symbol_table_head = NULL;
 ext_list *ext_table_head=NULL;
@@ -180,16 +181,184 @@ void process_word(Line *line, char *first_word)
     }
 }
 
-int which_instruction(char *word)
+void analyse_operation(Line *line, char *second_word, int is_label, char *first_word, int instruction_index, code_word *code_image)
 {
-    int i;
-    /* Check if the word matches any known directive */
-    for (i = 0; i < INSTRUCTION_COUNT; i++)
-    {
-        if (strcmp(word, instruction_list[i]) == 0)
-            return i; /* Return index of the directive if found */
-    }
-    return -1; /* Word is not a recognized directive */
+	int num_args, is_code = 0, op_index, address_method_src, address_method_des, len, is_comma = 0;
+	char *first_operand, *second_operand, *ptr;
+	if (is_label)
+		op_index = check_if_operation(second_word);
+	else
+		op_index = check_if_operation(first_word);
+
+	if (op_index != -1) // אם זו פקודה מוכרת של אסמבלי
+	{
+		is_code = 1;
+		if (is_label) // אם לפני כן הייתה תווית נוסיף לטבלת הסמלים
+		{
+			add_symbol(line, first_word, instruction_index, is_code);
+		}
+	}
+	else // זה לא פקודה מוכרת
+	{
+		print_syntax_error(ERROR_CODE_25, line->file_name, line->line_number);
+		FOUND_ERROR_IN_FIRST_PASS = 1;
+		return;
+	}
+
+	num_args = operation_list[op_index].address_method.num_args; // מספר האופרנדים של הפקודה
+
+	ptr = strstr(line->data, operation_list[op_index].operation_name);
+	ptr += strlen(operation_list[op_index].operation_name);
+	while (*ptr == SPACE) // דילוג על רווחים
+		ptr++;
+
+	switch (num_args)
+	{
+	case 0:
+		if (*ptr != NULL_CHAR) // extra chars after end of command
+		{
+			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		add_to_code_image(code_image, line, num_args, operation_list[op_index].opcode,ZERO, ZERO,ZERO, NULL,NULL);
+		return;
+
+	case 1:
+		if (*ptr == NULL_CHAR) // missing operand
+		{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		while (*ptr && isspace(*ptr)) /* Skipping whitespace */
+			ptr++;
+		if (*ptr == COMMA) // פסיק לא חוקי בין הוראה לאופרנד הראשון
+		{
+			print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		if (strchr(ptr, COMMA) != NULL) // אם יש פסיק נוסף בפקודה
+		{
+			print_syntax_error(ERROR_CODE_29, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+
+		second_operand = get_word(NULL);
+		len = strlen(second_operand);
+		if (second_operand[len - 1] == COMMA)
+		{
+			print_syntax_error(ERROR_CODE_35, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		/*need to check if addressing method is legal*/
+		address_method_des = which_addressing_method(second_operand, op_index, line);
+		if (address_method_des == -1)
+			return; // there was error. no need to keep analysing this line
+
+		ptr += len;
+		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
+		{
+			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		// check if the method is legal
+		if (is_legal_method(line, address_method_des, op_index, num_args))
+		{
+			return;
+		}
+
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
+
+		return;
+	case 2:
+		if (*ptr == NULL_CHAR) // missing operand
+		{
+			print_syntax_error(ERROR_CODE_30, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		if (*ptr == COMMA) // פסיק לא חוקי בין הוראה לאופרנד הראשון
+		{
+			print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		first_operand = get_word(NULL);
+		len = strlen(first_operand);
+		if (first_operand[len - 1] == COMMA)
+		{
+			is_comma = 1;
+			first_operand[len - 1] = NULL_CHAR; // need to word w/o the comma
+		}
+		address_method_src = which_addressing_method(first_operand, op_index, line);
+		if (address_method_src == -1)
+		{
+			return;
+		}
+		ptr += len;
+
+		while (*ptr == SPACE) // דילוג על רווחים
+			ptr++;
+		if (*ptr != COMMA && !is_comma) // expected comma
+		{
+			if(*ptr!=SPACE)
+			{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+			}
+			print_syntax_error(ERROR_CODE_33, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		while (*ptr == SPACE) // דילוג על רווחים
+			ptr++;
+
+		second_operand = get_word(NULL);
+		if(second_operand==NULL)
+		{
+			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		if (second_operand[0] == COMMA)
+		{
+			ptr++;
+			second_operand += 1;
+		}
+
+		len = strlen(second_operand);
+		if (second_operand[len - 1] == COMMA)
+		{
+			print_syntax_error(ERROR_CODE_35, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		address_method_des = which_addressing_method(second_operand, op_index, line);
+		if (address_method_des == -1)
+		{
+			return;
+		}
+		ptr += len;
+		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
+		{
+			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+			FOUND_ERROR_IN_FIRST_PASS = 1;
+			return;
+		}
+		// check if the method is legal
+		if (is_legal_method(line, address_method_des, op_index - 1, num_args) || is_legal_method(line, address_method_src, op_index, num_args))
+		{
+			return;
+		}
+		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
+		break;
+	}
 }
 
 int get_data(Line *line, int inst_index, int **numbers)

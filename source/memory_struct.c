@@ -1,6 +1,7 @@
 #include "../headers/memory_struct.h"
 #include "../headers/first_pass.h"
 #include "../headers/process_input.h"
+#include "../headers/op_list.h"
 
 int IC = 100;
 int DC = 0;

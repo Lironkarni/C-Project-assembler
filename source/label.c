@@ -1,4 +1,8 @@
 #include "../headers/label.h"
+#include "../headers/macro.h"
+#include "../headers/op_list.h"
+
+
 
 
 int is_valid_label(char *label, Line *line)
