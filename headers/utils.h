@@ -8,10 +8,10 @@
 
 #define MAX_LINE_LENGTH 1024 /* maximum line length in source file */
 
-/* רשימת מילות מפתח של דירקטיבות באסמבלר */
+/* List of directive keywords in the assembler */
 static const char *directive_words[] = { "data", "string", "extern", "entry" };
 
-/* כמות מילות מפתח של דירקטיבות באסמבלר */
+/* Number of assembler directive keywords */
 static const int directive_count = sizeof(directive_words) / sizeof(directive_words[0]);
 
 /*

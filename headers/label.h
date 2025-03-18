@@ -53,7 +53,10 @@ typedef struct ext_list {
     struct ext_list *next;
 } ext_list;
 
+/* Head pointer to the symbol table linked list */
 extern Symbol *symbol_table_head;
+
+/* Head pointer to the external labels list */
 extern ext_list *ext_table_head;
 
 int is_valid_label(char *label, Line *line);
@@ -80,7 +83,24 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code);
  *   returns: pointer to Symbol if found, otherwise NULL
  */
 Symbol *find_symbol(char *name);
+
+/*
+ * Function: update_symbol_tabel
+ * ----------------------------
+ *   Updates the addresses of data symbols in the symbol table after the first pass.
+ */
 void update_symbol_tabel();
+
+/*
+ * Function: add_to_ext_list
+ * ----------------------------
+ *   Adds a reference to an external label.
+ *
+ *   label_name: name of the external label
+ *   address: address at which the external label is referenced
+ *
+ *   returns: 1 on successful addition, 0 otherwise
+ */
 int add_to_ext_list(char *label_name, int address);
 
 #endif /* LABEL_H */

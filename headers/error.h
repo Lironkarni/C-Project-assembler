@@ -14,8 +14,8 @@
  *   err_message: descriptive error message
  */
 typedef struct error {
-    int err_code;       /* numeric error code */
-    char* err_message;  /* descriptive error message */
+    int err_code;       
+    char* err_message;  
 } error;
 
 /*
