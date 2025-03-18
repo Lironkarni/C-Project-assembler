@@ -295,6 +295,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		address_method_src = which_addressing_method(first_operand, op_index, line);
 		if (address_method_src == -1)
 		{
+            FOUND_ERROR_IN_FIRST_PASS=1;
 			return;
 		}
 		ptr += len;

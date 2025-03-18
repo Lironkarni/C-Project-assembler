@@ -27,15 +27,6 @@ void remove_extra_spaces(char *line);
  */
 int is_empty_line(const char *line);
 
-/*
- * Function: delete_am_file
- * ----------------------------
- *   Deletes pre-assembled (.am) file.
- *
- *   filename: base file name (without extension)
- */
-void delete_am_file(const char *filename);
-
 
 /*
  * Function: extraneous_text
