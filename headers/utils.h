@@ -16,18 +16,6 @@
  */
 void remove_extra_spaces(char *line);
 
-
-/*
- * Function: load_file
- * ----------------------------
- *   Loads file content into memory.
- *
- *   filename: file name
- *
- *   returns: pointer to loaded content
- */
-char *load_file(char *filename);
-
 /*
  * Function: is_empty_line
  * ----------------------------

@@ -4,6 +4,7 @@
 #include "../headers/first_pass.h"
 #include "../headers/pre_assembler.h"
 #include "../headers/macro.h"
+#include "../headers/file_handler.h"
 
 
 int main(int argc, char *argv[]) {

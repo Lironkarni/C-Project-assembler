@@ -1,9 +1,7 @@
 #ifndef MEMORY_STRUCT_H
 #define MEMORY_STRUCT_H
 
-#include "../headers/utils.h"
 #include "../headers/globals.h"
-#include "../headers/error.h"
 #include "../headers/line.h"
 
 
@@ -81,6 +79,33 @@ typedef struct {
 
 extern int DC; /* data counter */
 extern int IC; /* instruction counter (starts at 100) */
+
+/*
+ * Function: get_data
+ * ----------------------------
+ *   Extracts numeric data from a .data directive.
+ *
+ *   line: pointer to Line structure
+ *   inst_index: directive index
+ *   numbers: array to store extracted numbers
+ *
+ *   returns: number of values extracted, or -1 on error
+ */
+int get_data(Line *line, int inst_index, int **numbers);
+
+
+/*
+ * Function: get_string_data
+ * ----------------------------
+ *   Extracts string data from a .string directive.
+ *
+ *   line: pointer to Line structure
+ *   inst_index: directive index
+ *   string_value: extracted string
+ *
+ *   returns: 1 if successful, otherwise 0
+ */
+int get_string_data(Line *line, int inst_index, char **string_value);
 
 /*
  * Function: add_data

@@ -2,11 +2,180 @@
 #include "../headers/first_pass.h"
 #include "../headers/process_input.h"
 #include "../headers/op_list.h"
+#include "../headers/error.h"
 
 int IC = 100;
 int DC = 0;
 
 A_R_E a_r_e = {4, 2, 1};
+
+int get_data(Line *line, int inst_index, int **numbers)
+{
+    int expect_number = 1; // 0- expect number, 1- expect comma
+    int capacity, count = 0;
+    char *data_ptr = strstr(line->data, instruction_list[inst_index]);
+    /* Move pointer past directive keyword */
+    data_ptr += strlen(instruction_list[inst_index]);
+    while (*data_ptr == ' ')
+        data_ptr++;
+
+    /* Allocate initial memory for numbers array */
+    capacity = INIT_CAPACITY;
+    *numbers = (int *)malloc(capacity * sizeof(int));
+    if (*numbers == NULL)
+    {
+        print_system_error(ERROR_CODE_3);
+        exit(1);
+    }
+    while (*data_ptr != NULL_CHAR)
+    {
+        if (expect_number)
+        {
+            char *end_ptr;
+            /* Check if sign character is followed by a digit */
+            if (*data_ptr == MINUS || *data_ptr == PLUS)
+            {
+                if (!isdigit(*(data_ptr + 1)))
+                { // אם אחרי '-' או '+' לא בא מספר - שגיאה
+                    print_syntax_error(22, line->file_name, line->line_number);
+                    free(*numbers);
+                    return 1;
+                }
+            }
+            else if (!isdigit(*data_ptr))
+            {
+                print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
+            /* Convert string to integer */
+            int num=strtol(data_ptr, &end_ptr, DECIMAL);
+            if (*end_ptr == '.') { 
+                print_syntax_error(ERROR_CODE_41, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
+            /* Resize numbers array if necessary */
+            if (count >= capacity)
+            {
+                capacity *= 2;
+                *numbers = (int *)realloc(*numbers, capacity * sizeof(int)); 
+                if (*numbers == NULL)
+                {
+                    print_system_error(ERROR_CODE_3);
+                    exit(1);
+                }
+            }
+            (*numbers)[count++] = num; /* Store number in array */
+            expect_number = 0;  /* Next character should be comma */
+            data_ptr= end_ptr;
+        }
+        else
+        {
+            if (*data_ptr != COMMA)
+            {
+                print_syntax_error(ERROR_CODE_23, line->file_name, line->line_number);
+                free(*numbers);
+                return 1;
+            }
+            expect_number = 1; /* Next we expect a number */
+            data_ptr++;
+        }
+        /* Skip spaces between numbers/commas */
+        while (*data_ptr == SPACE)
+            data_ptr++;
+    }
+    /* Check if data instruction ends incorrectly with a comma */
+    if (expect_number)
+    {
+        print_syntax_error(ERROR_CODE_24, line->file_name, line->line_number);
+        free(*numbers);
+        return 1;
+    }
+    (*numbers)[count] = NULL_CHAR;
+    return 0; /* Success */
+}
+
+int get_string_data(Line *line, int inst_index, char **characters)
+{
+    int capacity = INIT_CAPACITY, length = 0;
+    char *char_array;
+    char *data_ptr = strstr(line->data, instruction_list[inst_index]);
+
+    /* Check if directive exists in the line */
+    if (!data_ptr)
+    {
+        print_syntax_error(ERROR_CODE_22, line->file_name, line->line_number);
+        return 1;
+    }
+
+    /* Move pointer past directive keyword */
+    data_ptr += strlen(instruction_list[inst_index]);
+
+    /* Skip initial spaces */
+    while (*data_ptr == SPACE) // דילוג על רווחים
+        data_ptr++;
+
+    /* Check if string begins with quotation mark */
+    if (*data_ptr != QUOTE)
+    { 
+        print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
+        return 1;
+    }
+
+    data_ptr++;  /* Skip opening quotation mark */
+
+    /* Allocate initial memory for storing string */
+    char_array = (char *)malloc(capacity * sizeof(char));
+    if (!char_array)
+    {
+        print_system_error(ERROR_CODE_3);
+        exit(1);
+    }
+
+    /* Read characters until closing quotation mark */
+    while (*data_ptr && *data_ptr != QUOTE)
+    {
+        if (length >= capacity)
+        {
+            capacity *= 2;
+            char_array = (char *)realloc(char_array, capacity * sizeof(char));
+            if (!char_array)
+            {
+                print_system_error(ERROR_CODE_3);
+                exit(1);
+            }
+        }
+        char_array[length++] = *data_ptr++;
+    }
+
+    /* Check for missing closing quotation mark */
+    if (*data_ptr != QUOTE)
+    { 
+        print_syntax_error(ERROR_CODE_20, line->file_name, line->line_number);
+        free(char_array);
+        return 1;
+    }
+
+    char_array[length] = NULL_CHAR;  /* Mark end of string */
+    *characters = char_array;
+
+    data_ptr++; /* Move past closing quotation mark */
+
+    /* Skip trailing spaces */
+    while (*data_ptr == SPACE)
+        data_ptr++;
+
+     /* Check for extraneous characters after the closing quotation mark */
+    if (*data_ptr != NULL_CHAR)
+    {
+        print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+        free(char_array);
+        return 1;
+    }
+
+    return 0;/* Success */
+}
 
 void add_data(data_word *data_image, int *numbers, Line *line)
 {
@@ -30,8 +199,6 @@ void add_data(data_word *data_image, int *numbers, Line *line)
         DC++;
     }
 }
-
-
 
 void add_string_data(data_word *data_image, char *char_array, Line *line)
 {
