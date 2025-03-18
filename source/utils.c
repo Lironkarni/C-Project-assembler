@@ -7,91 +7,102 @@
 #include "../headers/process_input.h"
 #include "../headers/globals.h"
 
-// הסרת רווחים מיותרים משורה
 void remove_extra_spaces(char *line)
 {
-    int j = 0;
-    int in_space = 0;
-    int i = 0;
+    int j = 0;   // Index for writing cleaned characters
+    int in_space = 0;    // Flag to track consecutive spaces
+    int i = 0;    // Index for reading characters
 
+    /* Skip leading spaces */
     while (line[i] == ' ')
     {
         i++;
     }
 
+    /* Process the line character by character */
     for (; line[i] != '\0' && line[i] != '\n'; i++)
     {
         if (line[i] != ' ')
         {
-            line[j++] = line[i];
+            line[j++] = line[i]; // Copy non-space character
             in_space = 0;
         }
         else if (!in_space)
         {
-            line[j++] = ' ';
+            line[j++] = ' '; // Copy a single space
             in_space = 1;
         }
+         // If already in space, skip additional spaces
     }
-    if (line[j - 1] == ' ')
-    {
-        line[j - 1] = '\0';
-    }
-    else
-    {
+    /* Remove trailing space if present */
+    if(line[j-1] == ' '){
+        line[j-1] = '\0';
+    }else{
         line[j] = '\0';
     }
 }
 
 int is_empty_line(const char *line)
 {
+    /* Iterate through each character in the line */
     while (*line)
     {
+        /* If a non-whitespace character is found, the line is not empty */
         if (!isspace((unsigned char)*line))
         {
-            return 0; // השורה אינה ריקה
+            return 0; // Line is not empty
         }
         line++;
     }
-    return 1; // השורה ריקה או מכילה רק רווחים וטאבים
+    return 1; // Line is empty or contains only spaces/tabs
 }
 
 
 void delete_am_file(const char *filename)
 {
 
+    /* Calculate the required length for the full file path */
     size_t len = strlen(filename) + strlen("test-files/") + strlen(".am") + 1;
 
+    /* Allocate memory for the full file path */
     char *am_filename = (char *)malloc(len);
     if (am_filename == NULL)
     {
-        print_system_error(ERROR_CODE_3);
+        print_system_error(ERROR_CODE_3); /* Memory allocation failed */
         return;
     }
 
+    /* Create the full .am file path */
     snprintf(am_filename, len, "test-files/%s.am", filename);
 
+    /* Attempt to delete the .am file */
     if (remove(am_filename) == 0)
     {
         printf("File %s deleted successfully.\n", am_filename);
     }
     else
     {
-        print_system_error(ERROR_CODE_7);
+        print_system_error(ERROR_CODE_7); /* File deletion failed */
     }
 
+    /* Free the allocated memory for the file path */
     free(am_filename);
 }
 
 int extraneous_text(char *command)
 {
-    int i;
+        int i;
+    /* Iterate through the command string */
     for (i = 0; *command != NULL_CHAR; i++)
     {
+        /* If a non-space, non-null character is found, it's extraneous text */
         if (command[i] != NULL_CHAR && command[i] != SPACE)
         {
-            return 1;
+            return 1;  /* Extraneous text found */
         }
     }
+
+    /* If the string is empty or contains only spaces, return 0 */
     if (i == 0)
     {
         return 0;

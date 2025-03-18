@@ -114,7 +114,6 @@ Symbol *find_symbol(char *name)
 
 int add_to_ext_list(char *label_name, int address)
 {
-	//ext_list *current= ext_list_head;
 	ext_list *new_label = (ext_list *)malloc(sizeof(ext_list));
         if (!new_label)
         {
