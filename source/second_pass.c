@@ -56,6 +56,7 @@ void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,da
                 current_symbol->type = ENTRY;
                 has_entry=1;
             }
+            is_label=0;
         }
 
         // check if line has label- if yes, look if label exists in symbol table
