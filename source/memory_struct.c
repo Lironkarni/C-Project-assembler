@@ -10,7 +10,6 @@ A_R_E a_r_e = {4, 2, 1};
 void add_data(data_word *data_image, int *numbers, Line *line)
 {
     int numbers_size = 0;
-    // int len = sizeof(numbers) / sizeof(numbers[0]);
     while (numbers[numbers_size] != '\0')
     {
         numbers_size++;
@@ -50,7 +49,7 @@ void add_string_data(data_word *data_image, char *char_array, Line *line)
         }
         else
         {
-            data_image[DC].data = (uint32_t)(char_array[i] & 0xFF); // רק ה-8 ביט התחתונים
+            data_image[DC].data = (uint32_t)(char_array[i] & 0xFF); // The lowest 8 bits only
         }
         DC++;
     }
@@ -61,8 +60,8 @@ void add_to_code_image(code_word *code_image, Line *line, int num_args, int op_i
     if(IC>=MEM_SIZE)
     {
         print_system_error(ERROR_CODE_37);
-        //???
-        // stop the program? stop forst pass?
+        
+        // TODO: stop the program? stop forst pass?
     }
     code_union code_u;
     code_image[IC].op_code = (uint8_t)(op_index & MASK);

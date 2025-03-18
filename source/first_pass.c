@@ -28,9 +28,7 @@ int first_pass(char *file)
 
     //update symbol table
     update_symbol_tabel();
-    //test(DC,IC);
-    second_pass(file, symbol_table_head, code_image,data_image); // second_pass
-    // test(DC,IC);   
+    second_pass(file, symbol_table_head, code_image,data_image); // start second_pass 
     return 0;
 }
 
@@ -219,7 +217,7 @@ int get_data(Line *line, int inst_index, int **numbers)
             if (*data_ptr == MINUS || *data_ptr == PLUS)
             {
                 if (!isdigit(*(data_ptr + 1)))
-                { // אם אחרי '-' או '+' לא בא מספר - שגיאה
+                { /* If a digit does not follow '-' or '+', it's an error.*/
                     print_syntax_error(22, line->file_name, line->line_number);
                     free(*numbers);
                     return 1;

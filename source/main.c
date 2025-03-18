@@ -7,7 +7,6 @@ int main(int argc, char *argv[]) {
     int i;
     char *as_file;
     if (argc < MIN_PARAM) {
-        // printf("Usage: %s <filename (without extension)>\n", argv[0]);
         print_system_error(ERROR_CODE_1);
         return 1;
     }
@@ -16,7 +15,7 @@ int main(int argc, char *argv[]) {
     for (i = 1; i < argc; i++) {
         as_file = load_file(argv[i]);
         if (as_file != NULL) {
-            // יוצרים את הקובץ .am
+            // create .am file
             pre_assembler(as_file);
             free(as_file);
 
@@ -27,15 +26,15 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            // בודקים את הקובץ .am ומייצרים קובץ .temp
             char filename_am[256];
             snprintf(filename_am, sizeof(filename_am), "test-files/%s.am", argv[i]);
+            /*start the first pass */
             first_pass(filename_am);
             if (FOUND_ERROR_IN_FIRST_PASS){
                 FOUND_ERROR_IN_FIRST_PASS = 0;
                 continue;
             }
-            //second_pass
+        
         } else {
             printf("in main not found\n");
             printf("File %s.as not found.\n", argv[i]);
