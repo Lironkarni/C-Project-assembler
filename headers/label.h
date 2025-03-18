@@ -2,7 +2,6 @@
 #define LABEL_H
 
 #include "../headers/line.h"
-#include "../headers/process_input.h"
 #include "../headers/label.h"
 #include "../headers/first_pass.h"
 

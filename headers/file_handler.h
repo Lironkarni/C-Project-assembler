@@ -2,7 +2,17 @@
 #define FILE_HANDLER_H
 
 #include "../headers/label.h"
+#include "../headers/memory_struct.h"
 
+
+/*
+ * Function: delete_am_file
+ * ----------------------------
+ *   Deletes pre-assembled (.am) file.
+ *
+ *   filename: base file name (without extension)
+ */
+void delete_am_file(const char *filename);
 
 /*
  * Function: load_file

@@ -2,8 +2,10 @@
 #define FIRST_PASS_H
 
 #include "../headers/utils.h"
-#include "../headers/process_input.h"
 #include "../headers/label.h"
+#include "../headers/memory_struct.h"
+
+#include <stdint.h>
 
 /*
  * Function: first_pass

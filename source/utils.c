@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include "../headers/utils.h"
 #include "../headers/error.h"
-#include "../headers/process_input.h"
 #include "../headers/globals.h"
 
 void remove_extra_spaces(char *line)
@@ -57,37 +56,6 @@ int is_empty_line(const char *line)
     return 1; // Line is empty or contains only spaces/tabs
 }
 
-
-void delete_am_file(const char *filename)
-{
-
-    /* Calculate the required length for the full file path */
-    size_t len = strlen(filename) + strlen("test-files/") + strlen(".am") + 1;
-
-    /* Allocate memory for the full file path */
-    char *am_filename = (char *)malloc(len);
-    if (am_filename == NULL)
-    {
-        print_system_error(ERROR_CODE_3); /* Memory allocation failed */
-        return;
-    }
-
-    /* Create the full .am file path */
-    snprintf(am_filename, len, "test-files/%s.am", filename);
-
-    /* Attempt to delete the .am file */
-    if (remove(am_filename) == 0)
-    {
-        printf("File %s deleted successfully.\n", am_filename);
-    }
-    else
-    {
-        print_system_error(ERROR_CODE_7); /* File deletion failed */
-    }
-
-    /* Free the allocated memory for the file path */
-    free(am_filename);
-}
 
 int extraneous_text(char *command)
 {
