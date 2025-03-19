@@ -23,7 +23,6 @@ void add_macro(const char *name, char **content, int line_count) {
         exit(1);
     }
     /* Store the macro name */
-    new_macro->name = strdup(name);
     new_macro->line_count = line_count;
     new_macro->next = NULL;
 

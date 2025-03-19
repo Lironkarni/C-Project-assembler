@@ -266,8 +266,10 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		/* Validate addressing method */
 		address_method_des = which_addressing_method(second_operand, op_index, line);
 		if (address_method_des == -1)
+        {
+            FOUND_ERROR_IN_FIRST_PASS=1;
 			return; // there was error. no need to keep analysing this line
-
+        }
 		ptr += len;
         /* Check for extraneous text after the operand */
 		if (extraneous_text(ptr)) 
