@@ -12,13 +12,14 @@ code_word code_image[MEM_SIZE]; /* Memory array for code instructions */
 data_word data_image[MEM_SIZE]; /* Memory array for data instructions */
 
 
-Symbol *symbol_table_head = NULL;
-ext_list *ext_table_head=NULL;
+Symbol *symbol_table_head = NULL;   // pointer to the head of the symbol table
+ext_list *ext_table_head=NULL;   // pointer to the head of the extern table
 
 
 int first_pass(char *file)
 {
     process_line(file); /* Process each line from the file */
+
     /* Check if errors were found during the first pass */
     if (FOUND_ERROR_IN_FIRST_PASS)
     {
@@ -26,7 +27,6 @@ int first_pass(char *file)
         return 1; /* Exit due to errors */
     }
 
-    //update symbol table
     update_symbol_tabel();
     second_pass(file, symbol_table_head, code_image,data_image); // start second_pass 
     return 0;
@@ -182,53 +182,63 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 {
 	int num_args, is_code = 0, op_index, address_method_src, address_method_des, len, is_comma = 0;
 	char *first_operand, *second_operand, *ptr;
+
+    /* Identify operation index in the operation list */
 	if (is_label)
 		op_index = check_if_operation(second_word);
 	else
 		op_index = check_if_operation(first_word);
 
-	if (op_index != -1) // אם זו פקודה מוכרת של אסמבלי
+    /* Validate if the operation is recognized */    
+	if (op_index != -1)
 	{
 		is_code = 1;
-		if (is_label) // אם לפני כן הייתה תווית נוסיף לטבלת הסמלים
+        /* If there was a label before the operation, add it to the symbol table */
+		if (is_label)
 		{
 			add_symbol(line, first_word, instruction_index, is_code);
 		}
 	}
-	else // זה לא פקודה מוכרת
+	else 
 	{
-		print_syntax_error(ERROR_CODE_25, line->file_name, line->line_number);
+		print_syntax_error(ERROR_CODE_25, line->file_name, line->line_number);  // Unrecognized operation
 		FOUND_ERROR_IN_FIRST_PASS = 1;
 		return;
 	}
 
-	num_args = operation_list[op_index].address_method.num_args; // מספר האופרנדים של הפקודה
+    /* Get the number of operands the operation expects */
+	num_args = operation_list[op_index].address_method.num_args; 
 
+    /* Move pointer after the operation name to process operands */
 	ptr = strstr(line->data, operation_list[op_index].operation_name);
 	ptr += strlen(operation_list[op_index].operation_name);
-	while (*ptr == SPACE) // דילוג על רווחים
+	while (*ptr == SPACE) 
 		ptr++;
 
 	switch (num_args)
 	{
 	case 0:
-		if (*ptr != NULL_CHAR) // extra chars after end of command
+        /* If the operation expects no operands but extra text exists */
+		if (*ptr != NULL_CHAR) 
 		{
 			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
+        /* Store the operation in the code image */
 		add_to_code_image(code_image, line, num_args, operation_list[op_index].opcode,ZERO, ZERO,ZERO, NULL,NULL);
 		return;
 
 	case 1:
-		if (*ptr == NULL_CHAR) // missing operand
+        /* Check for missing operand */
+		if (*ptr == NULL_CHAR) 
 		{
 			print_syntax_error(ERROR_CODE_26, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		while (*ptr && isspace(*ptr)) /* Skipping whitespace */
+        /* Check if there is an illegal comma between operation and operand */
+		while (*ptr && isspace(*ptr)) 
 			ptr++;
 		if (*ptr == COMMA) // פסיק לא חוקי בין הוראה לאופרנד הראשון
 		{
@@ -236,13 +246,15 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		if (strchr(ptr, COMMA) != NULL) // אם יש פסיק נוסף בפקודה
+        /* Check for extra commas */
+		if (strchr(ptr, COMMA) != NULL) 
 		{
 			print_syntax_error(ERROR_CODE_29, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
 
+        /* Extract the operand */
 		second_operand = get_word(NULL);
 		len = strlen(second_operand);
 		if (second_operand[len - 1] == COMMA)
@@ -251,13 +263,14 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		/*need to check if addressing method is legal*/
+		/* Validate addressing method */
 		address_method_des = which_addressing_method(second_operand, op_index, line);
 		if (address_method_des == -1)
 			return; // there was error. no need to keep analysing this line
 
 		ptr += len;
-		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
+        /* Check for extraneous text after the operand */
+		if (extraneous_text(ptr)) 
 		{
 			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
@@ -269,29 +282,33 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			return;
 		}
 
+        /* Store the operation in the code image */
 		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,ZERO,address_method_des, NULL, second_operand);
 
 		return;
 	case 2:
+    
 		if (*ptr == NULL_CHAR) // missing operand
 		{
 			print_syntax_error(ERROR_CODE_30, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		if (*ptr == COMMA) // פסיק לא חוקי בין הוראה לאופרנד הראשון
+		if (*ptr == COMMA) /* Illegal comma between operation and first operand */
 		{
 			print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
+        /* Extract first operand */
 		first_operand = get_word(NULL);
 		len = strlen(first_operand);
 		if (first_operand[len - 1] == COMMA)
 		{
 			is_comma = 1;
-			first_operand[len - 1] = NULL_CHAR; // need to word w/o the comma
+			first_operand[len - 1] = NULL_CHAR; // Remove the comma
 		}
+        /* Validate source addressing method */
 		address_method_src = which_addressing_method(first_operand, op_index, line);
 		if (address_method_src == -1)
 		{
@@ -300,9 +317,11 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		}
 		ptr += len;
 
-		while (*ptr == SPACE) // דילוג על רווחים
+		while (*ptr == SPACE) 
 			ptr++;
-		if (*ptr != COMMA && !is_comma) // expected comma
+        
+        /* Check if the comma between operands is missing or misplaced */
+		if (*ptr != COMMA && !is_comma) 
 		{
 			if(*ptr!=SPACE)
 			{
@@ -314,9 +333,10 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
-		while (*ptr == SPACE) // דילוג על רווחים
+		while (*ptr == SPACE)
 			ptr++;
 
+        /* Extract second operand */
 		second_operand = get_word(NULL);
 		if(second_operand==NULL)
 		{
@@ -324,6 +344,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
+        /* Skip comma if exists */
 		if (second_operand[0] == COMMA)
 		{
 			ptr++;
@@ -337,6 +358,8 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			FOUND_ERROR_IN_FIRST_PASS = 1;
 			return;
 		}
+
+        /* Validate destination addressing method */
 		address_method_des = which_addressing_method(second_operand, op_index, line);
 		if (address_method_des == -1)
 		{
@@ -344,7 +367,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 			return;
 		}
 		ptr += len;
-		if (extraneous_text(ptr)) // אקסטרה תווים אחרי האופרנד היחיד
+		if (extraneous_text(ptr)) /* Check for extraneous text after both operands */
 		{
 			print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
 			FOUND_ERROR_IN_FIRST_PASS = 1;
@@ -355,11 +378,12 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		{
 			return;
 		}
+
+        /* Store the operation in the code image */
 		add_to_code_image(code_image,line,num_args,operation_list[op_index].opcode,operation_list[op_index].funct,address_method_src,address_method_des,first_operand,second_operand);
 		break;
 	}
 }
-
 
 void test(int dc, int ic)
 {
@@ -390,14 +414,6 @@ void test(int dc, int ic)
     // הדפסת תמונת הקוד
     for (int i = 100; i < ic; i++)
     {
-        // בניית 24 ביטים מהמבנה
-        // uint32_t full_word = (code_image[i].op_code << 18) |
-        //                      (code_image[i].source_address << 16) |
-        //                      (code_image[i].source_reg << 13) |
-        //                      (code_image[i].target_address << 11) |
-        //                      (code_image[i].target_reg << 8) |
-        //                      (code_image[i].funct << 3) |
-        //                      (code_image[i].A_R_E);
         uint32_t full_word = 0;
         memcpy(&full_word, &code_image[i], 3); // מעתיקים רק 3 בתים (24 ביטים)
 
@@ -406,16 +422,6 @@ void test(int dc, int ic)
         printf(" (0x%06X)\n", full_word);
     }
     printf("-----------------------------\n");
-
-    // ext_ent_list *current_ext = ext_ent_list_head;
-    // printf("extern entry Table:\n");
-    // printf("-----------------------------\n");
-    // while (current_ext)
-    // {
-    //     printf("Name: %s| Type: %d| line_number: %d\n", current_ext->label_name, current_ext->type, current_ext->line->line_number);
-    //     current_ext = current_ext->next;
-    // }
-    // printf("-----------------------------\n\n");
 }
 
 void print_bits(uint32_t value, int bits)

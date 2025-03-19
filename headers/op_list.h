@@ -132,4 +132,4 @@ int is_register(char *ptr);
 int is_legal_method(Line *line, int method, int op_index, int num_args);
 
 
-#endif
+#endif /* OP_LIST_H */

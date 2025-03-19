@@ -11,9 +11,9 @@
  *   line_number: line number in source file
  */
 typedef struct Line {
-    char *file_name; /* source file name */
-    char *data;      /* line content */
-    int line_number; /* line number */
+    char *file_name; 
+    char *data;      
+    int line_number; 
 } Line;
 
 
@@ -30,4 +30,4 @@ typedef struct Line {
  */
 Line *create_line(char* temp_line, char* file, int line_number);
 
-#endif
+#endif /* LINE_H */

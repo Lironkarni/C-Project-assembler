@@ -103,35 +103,47 @@ void add_symbol(Line *line, char *name, int instruction_index, int is_code)
 Symbol *find_symbol(char *name)
 {
     Symbol *current = symbol_table_head;
+
+	/* Traverse the symbol table linked list */
     while (current)
     {
+		/* Check if the current symbol's name matches the requested name */
         if (strcmp(current->name, name) == 0)
-            return current;
+            return current; // Symbol found
         current = current->next;
     }
+	/* Symbol not found */
     return NULL;
 }
 
 int add_to_ext_list(char *label_name, int address)
 {
+	/* Allocate memory for the new external label node */
 	ext_list *new_label = (ext_list *)malloc(sizeof(ext_list));
         if (!new_label)
         {
-            print_system_error(ERROR_CODE_3);
+            print_system_error(ERROR_CODE_3); // Memory allocation failed
             return 1;
         }
+		/* Allocate memory for the label name string */
 		new_label->label_name = malloc(strlen(label_name) + 1);
 		if (!new_label->label_name) {
 			free(new_label); // Free the struct to prevent memory leaks
 			print_system_error(ERROR_CODE_3);
 			return 1;
 		}
+
+		/* Copy the label name */
 		strcpy(new_label->label_name, label_name);
+
+		/* Set the address of the external label */
 		new_label->address=address;
+
+		/* Insert the new label at the head of the external list */
 		new_label->next=ext_table_head;
 		ext_table_head=new_label;
 
-		return 0;
+		return 0; // Success
 }
 
 void update_symbol_tabel()

@@ -8,8 +8,9 @@
 
 void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,data_word *data_image)
 {
-    A_R_E a_r_e = {4, 2, 1};
+    A_R_E a_r_e = {4, 2, 1};   // Struct representing A/R/E bits
     FILE *input_file;
+
     char temp_line[MAX_LINE_LEN + 2];
     int line_number = 0, line_len, word_len, is_label = 0, has_externs=0, has_entry=0;
     Line *line;
@@ -123,7 +124,7 @@ void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,da
                     }
                     else
                     {
-                        if (code_image[i].target_address == 1)
+                        if (code_image[i].target_address == 1)  // Direct addressing
                         {
                             code_u.code_w.target_address = ZERO;
                             code_u.code_w.source_address = ZERO;
@@ -144,7 +145,7 @@ void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,da
                             code_image[i] = code_u.code_w;
                         }
 
-                        else if (code_image[i].target_address == 2)
+                        else if (code_image[i].target_address == 2)  // Relative addressing
                         {
                             int num = (current_symbol->address) - (i - 1); // caculate the between the addresses
 
@@ -167,18 +168,23 @@ void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,da
     printf("test2:\n");
     test(DC, IC);
 
+    // If errors were found during the second pass, stop
     if (FOUND_ERROR_IN_SECOND_PASS != 0)
     {
         return;
     }
+
+    // Generate .ent file if there were entries
     if(has_entry){
         make_ent_file(file,current_symbol);
     }
 
+    // Generate .ext file if there were externs
     if(has_externs){
         make_ext_file(file,ext_table_head);
     }
 
+    // Generate the object file (.ob)
     make_ob_file(file,code_image,IC,data_image,DC);    
 }
 
