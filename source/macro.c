@@ -4,20 +4,22 @@
 #include "../headers/op_list.h"
 
 
+Macro *head = NULL;  // pointer to the head of the macro list
 
-Macro *head = NULL;  // מצביע לראש הרשימה
-
-// הוספת מקרו לטבלה
 void add_macro(const char *name, char **content, int line_count) {
+    /* Allocate memory for the new macro node */
     Macro *new_macro = (Macro *)malloc(sizeof(Macro));
     if (!new_macro) {
         printf("Memory allocation failed!\n");
+        // TODO: 
         exit(1);
     }
+    /* Store the macro name */
     new_macro->name = strdup(name);
     new_macro->line_count = line_count;
     new_macro->next = NULL;
 
+    /* Allocate memory for the macro content lines */
     new_macro->content = (char **)malloc(line_count * sizeof(char *));
     if (!new_macro->content) {
         printf("Memory allocation failed!\n");
@@ -26,51 +28,55 @@ void add_macro(const char *name, char **content, int line_count) {
         exit(1);
     }
 
+    /* Copy each line of the macro content */
     for (int i = 0; i < line_count; i++) {
         new_macro->content[i] = strdup(content[i]);
     }
 
-    // הוספה לרשימה המקושרת (לסוף)
+    /* Insert the new macro into the linked list */
     if (!head) {
-        head = new_macro;
+        head = new_macro; // If the list is empty, set as head
     } else {
         Macro *current = head;
+
+        /* Traverse to the end of the list */
         while (current->next) {
             current = current->next;
         }
-        current->next = new_macro;
+        current->next = new_macro; // Append the new macro
     }
 }
 
-// חיפוש מקרו לפי שם
 Macro *find_macro(const char *name) {
     Macro *current = head;
+    /* Traverse the macro list */
     while (current) {
+        /* Compare the current macro's name with the target name */
         if (strcmp(current->name, name) == 0) {
-            return current;
+            return current;  // Macro found
         }
         current = current->next;
     }
-    return NULL;
+    return NULL; // Macro not found
 }
 
-
-// שחרור הזיכרון של הרשימה המקושרת
 void free_macros() {
     Macro *current = head;
     while (current) {
-        Macro *next = current->next;
+        Macro *next = current->next;  // Store next macro before freeing the current one
 
-        free(current->name);
+        free(current->name); // Free dynamically allocated macro name
+
+        // Free each line stored in the macro content
         for (int i = 0; i < current->line_count; i++) {
             free(current->content[i]);
         }
-        free(current->content);
-        free(current);
+        free(current->content);  // Free the content array itself
+        free(current);           // Free the macro struct
 
-        current = next;
+        current = next;  // Move to the next macro in the list
     }
-    head = NULL;
+    head = NULL;   // Reset the head pointer to NULL after cleanup
 }
 
 int is_valid_macro_name(char *macro_name ,const char *filename , int line_count) {
@@ -101,14 +107,15 @@ int is_valid_macro_name(char *macro_name ,const char *filename , int line_count)
 }
 
 int is_valid_macro_end(char *line, const char *filename, int line_count) {
-    char *ptr = line + 7;
+    char *ptr = line + 7; // Move pointer to the character right after 'mcroend'
 
+    // Check if there is any extra text after 'mcroend'
     if (*ptr != NULL_CHAR && *ptr != NULL_CHAR) {
-        print_syntax_error(ERROR_CODE_16, filename , line_count);
-        return 1;
+        print_syntax_error(ERROR_CODE_16, filename , line_count); // Print syntax error for extra characters
+        return 1; // Invalid macro end
     }
 
-    return 0; // אין שגיאה
+    return 0; // Valid macro end (no extra text)
 
 }
 

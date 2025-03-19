@@ -3,10 +3,10 @@
 #include "../headers/op_list.h"
 #include "../headers/error.h"
 
-int IC = 100;
-int DC = 0;
+int IC = 100;   // Initializing the Instruction counter
+int DC = 0;     // Initializing the Data counter
 
-A_R_E a_r_e = {4, 2, 1};
+A_R_E a_r_e = {4, 2, 1};  // Initializing the addressing bits array
 
 int get_data(Line *line, int inst_index, int **numbers)
 {

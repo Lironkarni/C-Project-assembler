@@ -12,8 +12,8 @@ code_word code_image[MEM_SIZE]; /* Memory array for code instructions */
 data_word data_image[MEM_SIZE]; /* Memory array for data instructions */
 
 
-Symbol *symbol_table_head = NULL; 
-ext_list *ext_table_head=NULL;
+Symbol *symbol_table_head = NULL;   // pointer to the head of the symbol table
+ext_list *ext_table_head=NULL;   // pointer to the head of the extern table
 
 
 int first_pass(char *file)
@@ -383,7 +383,6 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		break;
 	}
 }
-
 
 void test(int dc, int ic)
 {
