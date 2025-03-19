@@ -81,11 +81,13 @@ int extraneous_text(char *command)
 char *get_word(char *line)
 {
     static char *current = NULL;
+
     // if its the first word in the line
     if (line != NULL)
     {
         current = line;
     }
+
     // got to the end of the row
     if (*current == NULL_CHAR)
     {
@@ -97,6 +99,7 @@ char *get_word(char *line)
     {
         current++;
     }
+
     // size of the current word
     int len = 0;
     while (current[len] != NULL_CHAR && current[len] != SPACE)
@@ -108,7 +111,8 @@ char *get_word(char *line)
             break;
         }
     }
-    // פסיקים
+    
+    // Handle the case where there are spaces followed by a comma (e.g., "LABEL ,")
     if (current[len] == SPACE)
     {
         int temp = len + 1;
