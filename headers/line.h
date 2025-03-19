@@ -30,4 +30,4 @@ typedef struct Line {
  */
 Line *create_line(char* temp_line, char* file, int line_number);
 
-#endif
+#endif /* LINE_H */
