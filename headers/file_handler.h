@@ -38,9 +38,25 @@ char *load_file(char *filename);
  */
 void make_ob_file(const char *filename, code_word *code_image, int ic, data_word *data_image, int dc);
 
+/*
+ * Function: make_ent_file
+ * ----------------------------
+ *   Generates the .ent file containing entry labels and their memory addresses.
+ *
+ *   filename: name of output file (without extension)
+ *   symbol_table_head: pointer to symbol table head
+ */
 void make_ent_file(const char *filename, Symbol *symbol_table_head);
 
+/*
+ * Function: make_ext_file
+ * ----------------------------
+ *   Generates the .ext file listing all external symbols used and their reference addresses.
+ *
+ *   filename: name of output file (without extension)
+ *   ext_table_head: pointer to the external symbols list head
+ */
 void make_ext_file(const char *filename, ext_list *ext_table_head);
 
 
-#endif
+#endif /* FILE_HANDLER_H */

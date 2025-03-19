@@ -10,4 +10,4 @@
  */
 void pre_assembler(const char *filename);
 
-#endif
+#endif /* PRE_ASSEMBLER_H */

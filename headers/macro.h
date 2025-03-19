@@ -1,10 +1,10 @@
 #ifndef MACRO_H
 #define MACRO_H
 
-/* רשימת מילות מפתח של דירקטיבות באסמבלר */
+/* List of assembler directive keywords */
 static const char *directive_words[] = { "data", "string", "extern", "entry" };
 
-/* כמות מילות מפתח של דירקטיבות באסמבלר */
+/* Number of assembler directive keywords */
 static const int directive_count = sizeof(directive_words) / sizeof(directive_words[0]);
 
 /*

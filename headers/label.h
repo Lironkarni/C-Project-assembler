@@ -58,6 +58,18 @@ extern Symbol *symbol_table_head;
 /* Head pointer to the external labels list */
 extern ext_list *ext_table_head;
 
+
+/*
+ * Function: is_valid_label
+ * ----------------------------
+ *   Validates if the given label name follows assembler naming rules.
+ *   Checks length, starting character, allowed characters, and reserved words.
+ *
+ *   label: the label name to validate
+ *   line: pointer to Line structure for error reporting
+ *
+ *   returns: 1 if the label is invalid (error), 0 if the label is valid
+ */
 int is_valid_label(char *label, Line *line);
 
 /*
