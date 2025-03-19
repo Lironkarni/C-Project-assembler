@@ -199,6 +199,9 @@ int is_legal_method(Line *line, int method, int op_index, int num_args)
 
 int is_register(char *ptr)
 {
+    /*check that the length of the word is 2 chars*/
+    if(strlen(ptr)!=TWO)
+    return 0; /*not register*/
 	/* Loop through all register names */
 	for (int i = 0; i < NUM_OF_REG; i++)
 	{
