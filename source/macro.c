@@ -38,8 +38,6 @@ void add_macro(const char *name, char **content, int line_count) {
     }
 
     /* Copy each line of the macro content */
-    for (int i = 0; i < line_count; i++) {
-        new_macro->content[i] = strdup(content[i]);
     for (int i = 0; i < line_count; i++)
     {
         new_macro->content[i] = copy_name(content[i]);
