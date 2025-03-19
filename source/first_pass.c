@@ -340,6 +340,7 @@ void analyse_operation(Line *line, char *second_word, int is_label, char *first_
 		address_method_des = which_addressing_method(second_operand, op_index, line);
 		if (address_method_des == -1)
 		{
+            FOUND_ERROR_IN_FIRST_PASS=1;
 			return;
 		}
 		ptr += len;

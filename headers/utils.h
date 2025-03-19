@@ -51,4 +51,6 @@ int extraneous_text(char *command);
  */
 char* get_word(char* line);
 
+char *copy_name(const char *name);
+
 #endif /* FILE_COPY_H */

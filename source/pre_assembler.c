@@ -22,7 +22,7 @@ void pre_assembler(const char *filename)
         return;
     }
     strncpy(new_filename, filename, len - 3);
-    new_filename[len - 3] = '\0';
+    new_filename[len - 3] = NULL_CHAR;
     strcat(new_filename, ".am");
 
     FILE *input_file = fopen(filename, "r");
@@ -46,7 +46,7 @@ void pre_assembler(const char *filename)
     {
         line_count++;
         remove_extra_spaces(line);
-        line[strcspn(line, "\n")] = '\0'; // הסרת תו סוף שורה
+        line[strcspn(line, "\n")] = NULL_CHAR; // הסרת תו סוף שורה
 
          // 🔹 בדיקת הערות – אם השורה מתחילה ב-";" דלג עליה
         if (line[0] == COMMENT) {
@@ -87,7 +87,16 @@ void pre_assembler(const char *filename)
                 print_system_error(ERROR_CODE_3);
                 exit(1);
             }
-            macro_content[new_line_count] = strdup(line);
+            macro_content[new_line_count] = copy_name(line);
+            if (!macro_content[new_line_count]) { //alloacte failed
+                for (int i = 0; i < new_line_count; i++) {
+                    free(macro_content[i]);
+                }
+                free(macro_content);
+                print_system_error(ERROR_CODE_3);
+                exit(1);
+            }
+
             new_line_count++;
         } 
         else { 
