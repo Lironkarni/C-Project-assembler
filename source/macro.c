@@ -15,6 +15,7 @@ void add_macro(const char *name, char **content, int line_count) {
         print_system_error(ERROR_CODE_3);
         exit(1);
     }
+        /* Store the macro name */
     new_macro->name = copy_name(name);
     if (!new_macro->name)
     {
@@ -22,7 +23,6 @@ void add_macro(const char *name, char **content, int line_count) {
         print_system_error(ERROR_CODE_3);
         exit(1);
     }
-    /* Store the macro name */
     new_macro->line_count = line_count;
     new_macro->next = NULL;
 
