@@ -66,7 +66,8 @@ typedef enum error_codes  {
     ERROR_CODE_39,     /* Label declared as entry but not as a label in the same file */
     ERROR_CODE_40,     /* Label used as an operand but not declared as a label */
     ERROR_CODE_41,     /* Numbers in data instruction must be integers (not decimal) */
-    ERROR_CODE_42      /* Operand of type number (#) must be an integer (not decimal) */
+    ERROR_CODE_42,      /* Operand of type number (#) must be an integer (not decimal) */
+    ERROR_CODE_43
 } error_codes;
 
 /* Flags indicating if errors were found during program phases */
