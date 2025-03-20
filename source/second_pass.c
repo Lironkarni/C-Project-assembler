@@ -171,6 +171,7 @@ void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,da
     // If errors were found during the second pass, stop
     if (FOUND_ERROR_IN_SECOND_PASS != 0)
     {
+        FOUND_ERROR_IN_SECOND_PASS=0;
         return;
     }
 
