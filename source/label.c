@@ -17,7 +17,7 @@ int is_valid_label(char *label, Line *line)
 	int i = 0, len;
 	int op;
 	len = strlen(label);
-	if(label[len-1]==COLON || label[len-1]==COMMA){
+	if(label[len-1]==COLON || label[len-1]==COMMA || label[len-1]==' '){
         label[len-1]=NULL_CHAR;
         len--;
     }
