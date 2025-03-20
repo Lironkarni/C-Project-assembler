@@ -163,3 +163,28 @@ void update_symbol_tabel()
         current = current->next;/* Move to next symbol */
     }
 }
+
+void free_symbols()
+{
+	Symbol *current = symbol_table_head;
+    while (current) {
+        Symbol *next = current->next;  // Store next symbol before freeing the current one
+        free(current); // Free allocated symbol
+        current = next;  // Move to the next macro in the list
+    }
+	symbol_table_head = NULL;   // Reset the head pointer to NULL after cleanup
+}
+
+void free_externs()
+{
+	ext_list *current= ext_table_head;
+	ext_list *next;
+	while (current)
+	{
+		next=current->next;
+		free(current->label_name); // Free allocated extern name
+		free(current); // Free allocated extern
+		current=next;
+	}
+	ext_table_head = NULL;   // Reset the head pointer to NULL after cleanup
+}

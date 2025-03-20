@@ -114,4 +114,18 @@ void update_symbol_tabel();
  */
 int add_to_ext_list(char *label_name, int address);
 
+/*
+ * Function: free_macros
+ * ----------------------------
+ *   Frees allocated memory for symbols.
+ */
+void free_symbols();
+
+/*
+ * Function: free_macros
+ * ----------------------------
+ *   Frees allocated memory for externs.
+ */
+void free_externs();
+
 #endif /* LABEL_H */

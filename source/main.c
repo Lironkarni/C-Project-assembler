@@ -5,6 +5,7 @@
 #include "../headers/pre_assembler.h"
 #include "../headers/macro.h"
 #include "../headers/file_handler.h"
+#include "../headers/label.h"
 
 
 int main(int argc, char *argv[]) {
@@ -49,8 +50,11 @@ int main(int argc, char *argv[]) {
         }
 
         free_macros();  // Free all macros stored in memory
-        //free_symbols();// Free all macros symbols in memory
-        //free_externs();// Free all macros extern in memory
+        free_symbols();// Free all symbols in memory
+        free_externs();// Free all externs in memory
+        
+        IC = 100;   // Initializing the Instruction counter
+        DC = 0;     // Initializing the Data counter
     }
     return 0;
 }
