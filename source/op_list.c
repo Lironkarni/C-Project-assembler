@@ -199,6 +199,13 @@ int is_legal_method(Line *line, int method, int op_index, int num_args)
 
 int is_register(char *ptr)
 {
+    /*remove the spaces from the end if there are*/
+  int len=strlen(ptr);
+  while (len>0 && isspace((unsigned char) ptr[len-1])){
+    len--;
+  }
+ ptr[len]=NULL_CHAR;
+  
     /*check that the length of the word is 2 chars*/
     if(strlen(ptr)!=TWO)
     return 0; /*not register*/

@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
             }
         
         } else {
-            printf("in main not found\n");
             printf("File %s.as not found.\n", argv[i]);
         }
 
