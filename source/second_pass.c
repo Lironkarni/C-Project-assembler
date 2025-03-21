@@ -14,7 +14,7 @@ void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,da
     char temp_line[MAX_LINE_LEN + 2];
     int line_number = 0, line_len, word_len, is_label = 0, has_externs=0, has_entry=0;
     Line *line;
-    char *first_word, *second_word;
+    char *first_word, *second_word, *ptr;
     Symbol *current_symbol;
 
     input_file = fopen(file, "r");
@@ -45,17 +45,33 @@ void second_pass(char *file, Symbol *symbol_table_head, code_word *code_image,da
             {
                 second_word = get_word(NULL);
                 // need to make sure label is declared already in label list
-                //current_symbol = (Symbol *)malloc(sizeof(Symbol));
                 current_symbol = find_symbol(second_word);
 
                 if (current_symbol == NULL)
                 {
                     print_syntax_error(ERROR_CODE_39, line->file_name, line->line_number);
                     FOUND_ERROR_IN_SECOND_PASS = 1;
+                    continue;
                 }
                 // add type entry to the label we found in label list
                 current_symbol->type = ENTRY;
                 has_entry=1;
+
+                //check if there extra chars after end of command
+                ptr = (char *)malloc(strlen(line->data) * sizeof(char));
+                ptr=strstr(line->data, second_word);
+                ptr+=strlen(second_word);
+                //skip spaces
+                while (*ptr == SPACE) 
+                ptr++;
+                if(extraneous_text(ptr))
+                {
+                    print_syntax_error(ERROR_CODE_21, line->file_name, line->line_number);
+                    FOUND_ERROR_IN_SECOND_PASS=1;
+                    continue;
+                }
+
+
             }
             is_label=0;
         }
