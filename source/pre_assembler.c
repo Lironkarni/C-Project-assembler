@@ -55,7 +55,6 @@ void pre_assembler(const char *filename)
         line_count++;
         remove_extra_spaces(line);  // Clean extra spaces
         line[strcspn(line, "\n")] = NULL_CHAR; // Remove newline character
-
         // Skip comment lines
         if (line[0] == COMMENT) {
             continue;
@@ -74,13 +73,17 @@ void pre_assembler(const char *filename)
 
             // Validate macro name
             if(is_valid_macro_name(macro_name ,filename, line_count)!= 0){
+                inside_macro = 0;
                 continue;
             }
             macro_content = NULL;
         } 
 
         // Detect end of a macro
-        else if (inside_macro && strncmp(line, "mcroend", 7) == 0) { 
+        else if ( strncmp(line, "mcroend", 7) == 0) {
+            if (!inside_macro){
+               print_syntax_error(ERROR_CODE_43, filename, line_count);
+            } 
             //add macro only if macro_end is valid
             if (is_valid_macro_end(line,filename, line_count)==0){
                 add_macro(macro_name, macro_content, new_line_count);
