@@ -71,7 +71,7 @@ void process_line(char *file)
 
             if (line == NULL)
             {
-                /* TODO: need to free all memery*/
+                print_system_error(ERROR_CODE_3);
                 exit(1);
             }
 
@@ -105,6 +105,12 @@ void process_word(Line *line, char *first_word)
 
     /* Get the next word if label, otherwise use first_word */
     second_word = is_label ? get_word(NULL) : first_word;
+    if(second_word[strlen(second_word)-1]== COMMA)
+    {
+        print_syntax_error(ERROR_CODE_28, line->file_name, line->line_number);
+        FOUND_ERROR_IN_FIRST_PASS=1;
+        return;
+    }
     instruction_index = which_instruction(second_word);
 
     /* Check if the word is an assembler directive */
